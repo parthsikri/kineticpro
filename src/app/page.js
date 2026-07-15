@@ -27,31 +27,31 @@ export default function LandingPage() {
     <div className="flex-1 flex flex-col items-center min-h-screen bg-black">
       
       {/* Navigation */}
-      <nav className="w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between z-10">
+      <nav className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shrink-0">
             <Sparkles className="w-5 h-5 text-black" />
           </div>
-          <span className="font-semibold text-lg tracking-widest uppercase brand-title">
+          <span className="font-semibold text-base sm:text-lg tracking-widest uppercase brand-title hidden sm:inline-block">
             KINETIC <span className="text-gold font-light">PRO</span>
           </span>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {loading ? (
             <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse"></div>
           ) : user ? (
             <>
-              <Link href="/dashboard" className="text-xs font-bold uppercase tracking-wider text-white hover:text-gold transition-colors mr-4">
+              <Link href="/dashboard" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white hover:text-gold transition-colors">
                 Go to Dashboard
               </Link>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-xs font-bold uppercase tracking-wider text-white hover:text-gold transition-colors mr-4">
+              <Link href="/login" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white hover:text-gold transition-colors shrink-0">
                 Sign In
               </Link>
-              <Link href="/register" className="premium-btn py-2 px-6">
+              <Link href="/register" className="premium-btn py-2 px-4 sm:px-6 text-[10px] sm:text-xs whitespace-nowrap">
                 Get Started
               </Link>
             </>
@@ -60,17 +60,17 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-4 text-center mt-20 z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest mb-8 animate-fadeIn">
+      <main className="flex-1 flex flex-col items-center justify-center w-full px-4 text-center mt-12 sm:mt-20 z-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-6 sm:mb-8 animate-fadeIn">
           <Sparkles className="w-3 h-3" />
           <span>The #1 AI Thumbnail Engine</span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 max-w-4xl mx-auto leading-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white mb-4 sm:mb-6 max-w-4xl mx-auto leading-[1.1]">
           Create <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200 font-serif italic font-normal">million-view</span> thumbnails in seconds.
         </h1>
         
-        <p className="text-lg md:text-xl text-muted font-light max-w-2xl mx-auto mb-12">
+        <p className="text-base sm:text-lg md:text-xl text-muted font-light max-w-2xl mx-auto mb-8 sm:mb-12 px-2">
           Stop wasting hours on editing software. Describe your video, upload your face, and let our proprietary AI engine craft a high-converting masterpiece.
         </p>
         
