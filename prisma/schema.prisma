@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  password           String
+  razorpayCustomerId String?   @unique
+  subscriptionStatus String    @default("inactive") // "active", "inactive", "past_due"
+  subscriptionTier   String    @default("free") // "free", "pro", "elite"
+  credits            Int       @default(1) // Free tier gets 1 thumbnail
+  proCreditsUsed     Int       @default(0)
+  proCreditsResetAt  DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  sessions           Session[]
+  images             UserImage[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model UserImage {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  createdAt DateTime @default(now())
+}

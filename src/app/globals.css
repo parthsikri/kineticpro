@@ -1,26 +1,219 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-black: #000000;
+  --color-dark-gray: #0a0a0b;
+  --color-charcoal: #121214;
+  --color-light-charcoal: #1c1c1e;
+  --color-gold: #cfa15f;
+  --color-gold-hover: #b88f50;
+  --color-white: #ffffff;
+  --color-off-white: #f5f5f7;
+  --color-muted: #8e8e93;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-success: #30d158;
+  
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-black);
+  color: var(--color-off-white);
+  font-family: var(--font-sans), sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Premium Typography styling */
+h1, h2, h3, h4, .serif-font {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-light-charcoal);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+/* Custom premium CSS component utilities */
+.premium-card {
+  background: var(--color-charcoal);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 2.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.premium-card:hover {
+  border-color: rgba(207, 161, 95, 0.3);
+  box-shadow: 0 8px 40px 0 rgba(207, 161, 95, 0.05);
+}
+
+.premium-btn {
+  background: var(--color-gold);
+  color: var(--color-black);
+  border: 1px solid var(--color-gold);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.premium-btn:hover {
+  background: var(--color-gold-hover);
+  border-color: var(--color-gold-hover);
+  transform: translateY(-1px);
+}
+
+.premium-btn:disabled {
+  background: var(--color-light-charcoal);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.premium-btn-secondary {
+  background: transparent;
+  color: var(--color-off-white);
+  border: 1px solid var(--color-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.premium-btn-secondary:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.premium-input, .premium-select, .premium-textarea {
+  background: var(--color-dark-gray);
+  border: 1px solid var(--color-border);
+  color: var(--color-off-white);
+  padding: 0.85rem 1rem;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.premium-input:focus, .premium-select:focus, .premium-textarea:focus {
+  border-color: var(--color-gold);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(207, 161, 95, 0.15);
+}
+
+.premium-input::placeholder, .premium-textarea::placeholder {
+  color: var(--color-muted);
+}
+
+.premium-label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* Custom visual styles */
+.brand-title {
+  background: linear-gradient(135deg, #ffffff 0%, #a0a0a5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-accent {
+  color: var(--color-gold);
+}
+
+.gold-border {
+  border-color: var(--color-gold);
+}
+
+.loader {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(207, 161, 95, 0.1);
+  border-top-color: var(--color-gold);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.text-gold  { color: var(--color-gold); }
+.text-muted { color: var(--color-muted); }
+.text-off-white { color: var(--color-off-white); }
+.bg-dark-gray { background-color: var(--color-dark-gray); }
+.bg-charcoal  { background-color: var(--color-charcoal); }
+.border-border { border-color: var(--color-border); }
+.border-gold   { border-color: var(--color-gold); }
+
+/* Opacity variants used in CTR analysis section */
+.bg-gold\/5  { background-color: rgba(207, 161, 95, 0.05); }
+.bg-gold\/8  { background-color: rgba(207, 161, 95, 0.08); }
+.bg-gold\/10 { background-color: rgba(207, 161, 95, 0.10); }
+.border-gold\/20 { border-color: rgba(207, 161, 95, 0.20); }
+.border-gold\/25 { border-color: rgba(207, 161, 95, 0.25); }
+.border-gold\/40 { border-color: rgba(207, 161, 95, 0.40); }
+.text-gold\/80 { color: rgba(207, 161, 95, 0.80); }
+
+/* premium-select arrow */
+.premium-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
 }
