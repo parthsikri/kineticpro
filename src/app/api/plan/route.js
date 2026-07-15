@@ -260,6 +260,10 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subje
     "- Badges/pills: Bold rounded sans-serif\n" +
     "- Banner: Impact/condensed, ALL CAPS\n" +
     "- All text: 100% correctly spelled, sharp edges, strong drop-shadow for legibility\n\n" +
+    "ANATOMY RULES (CRITICAL):\n" +
+    "- The subject MUST have exactly two natural arms and hands.\n" +
+    "- Hands must be perfectly formed, anatomically correct, and attached naturally to the body.\n" +
+    "- STRICTLY NO extra floating hands, NO extra fingers, and NO distorted limbs. Keep hands out of the frame if they cannot be rendered perfectly.\n\n" +
     "COLOR PALETTE:\n" +
     "- Brand/dominant: " + brandColor + "\n" +
     "- Accent/highlight: " + accent + "\n" +
