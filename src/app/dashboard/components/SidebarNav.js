@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard, Shield } from "lucide-react";
 
-export default function SidebarNav() {
+export default function SidebarNav({ isAdmin }) {
   const pathname = usePathname();
 
   const navItems = [
@@ -14,6 +14,10 @@ export default function SidebarNav() {
     { name: "Plans & Pricing", href: "/dashboard/pricing", icon: CreditCard },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
+
+  if (isAdmin) {
+    navItems.push({ name: "Admin Panel", href: "/dashboard/admin", icon: Shield });
+  }
 
   return (
     <nav className="flex-1 p-4 space-y-2">

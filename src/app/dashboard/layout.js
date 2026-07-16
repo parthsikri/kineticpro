@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }) {
       </div>
       
       {/* Nav Links */}
-      <SidebarNav />
+      <SidebarNav isAdmin={user.isAdmin || user.email === "apnaipuwallah@gmail.com"} />
 
       {/* User Status / Upgrade */}
       <div className="p-4 border-t border-border space-y-4">

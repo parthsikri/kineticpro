@@ -22,6 +22,7 @@ model User {
   proCreditsUsed     Int       @default(0)
   proCreditsResetAt  DateTime?
   subscriptionExpiresAt DateTime?
+  isAdmin            Boolean   @default(false)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   sessions           Session[]
