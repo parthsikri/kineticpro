@@ -132,7 +132,7 @@ export async function POST(request) {
         const editPrompt = `${variantPrompt}\n\nCRITICAL: Use the person from the provided reference photo as the subject. Preserve their face, skin tone, and likeness with absolute accuracy. Style them dramatically for a high-production YouTube thumbnail.`;
         formData.append("prompt", editPrompt);
         formData.append("model", modelName);
-        formData.append("size", "1792x1024");
+        formData.append("size", "1536x1024");
         formData.append("quality", "low");
         formData.append("n", "1");
 
@@ -174,19 +174,39 @@ export async function POST(request) {
   }
 }
 
+const storageConfigured = () =>
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY !== "replace_with_your_supabase_service_role_key";
+
 async function saveImagesToStorageAndDB(urls, userId) {
   if (!urls || urls.length === 0) return urls;
   const savedUrls = [];
   for (let i = 0; i < urls.length; i++) {
     const b64Data = urls[i];
     if (b64Data.startsWith("data:")) {
-      const image = parseImageDataUri(b64Data, "Generated image");
-      const storagePath = newStoragePath("generated", userId, image.extension);
-      await uploadPrivateImage(storagePath, image.buffer, image.mimeType);
-      await prisma.userImage.create({ data: { userId, filename: storagePath.split("/").at(-1), url: storagePath } });
-      savedUrls.push(await getSignedImageUrl(storagePath));
+      if (storageConfigured()) {
+        // Upload to Supabase private storage
+        try {
+          const image = parseImageDataUri(b64Data, "Generated image");
+          const storagePath = newStoragePath("generated", userId, image.extension);
+          await uploadPrivateImage(storagePath, image.buffer, image.mimeType);
+          await prisma.userImage.create({ data: { userId, filename: storagePath.split("/").at(-1), url: storagePath } });
+          savedUrls.push(await getSignedImageUrl(storagePath));
+        } catch (storageErr) {
+          // Storage failed — return base64 directly so generation still works
+          console.error("Storage upload failed, returning base64 directly:", storageErr.message);
+          savedUrls.push(b64Data);
+        }
+      } else {
+        // Storage not configured — return base64 data URL directly (works in browser)
+        console.log("Storage not configured — returning base64 URL directly");
+        savedUrls.push(b64Data);
+      }
     } else if (b64Data.startsWith("http")) {
-      await prisma.userImage.create({ data: { userId, filename: `remote_${Date.now()}_${i}.jpg`, url: b64Data } });
+      try {
+        await prisma.userImage.create({ data: { userId, filename: `remote_${Date.now()}_${i}.jpg`, url: b64Data } });
+      } catch { /* non-critical */ }
       savedUrls.push(b64Data);
     } else {
       savedUrls.push(b64Data);
@@ -199,7 +219,7 @@ async function generateFromText(apiKey, modelName, imagePrompt) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1792x1024", quality: "low" }),
+    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1536x1024", quality: "low", output_format: "png" }),
   });
   if (!response.ok) {
     const errText = await response.text();
