@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, Settings, History } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard } from "lucide-react";
 
 export default function SidebarNav() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export default function SidebarNav() {
     { name: "Generator", href: "/dashboard", icon: LayoutDashboard },
     { name: "History", href: "/dashboard/history", icon: History },
     { name: "My Assets", href: "/dashboard/assets", icon: ImageIcon },
+    { name: "Plans & Pricing", href: "/dashboard/pricing", icon: CreditCard },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
