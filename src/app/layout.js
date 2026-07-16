@@ -14,6 +14,13 @@ const playfair = Playfair_Display({
 export const metadata = {
   title: "KineticPro - Premium Thumbnail Maker Engine",
   description: "The premium thumbnail planning and generation suite for professional creators.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
