@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Shield, 
   User, 
@@ -12,17 +13,38 @@ import {
   CheckCircle, 
   AlertCircle, 
   Sparkles,
-  Key
+  Key,
+  LogOut
 } from "lucide-react";
 
 export default function AdminPage() {
+  const router = useRouter();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  const handleLogout = async () => {
+    if (logoutLoading) return;
+    setLogoutLoading(true);
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      if (res.ok) {
+        router.push("/");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
 
   // Form states for editing
   const [editTier, setEditTier] = useState("free");
@@ -146,16 +168,29 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-3.5 w-4 h-4 text-muted" />
-          <input 
-            type="text" 
-            placeholder="Search users by email..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="premium-textarea pl-9 py-2.5 w-full text-sm"
-          />
+        {/* Actions Area */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* Search */}
+          <div className="relative flex-1 md:w-80">
+            <Search className="absolute left-3 top-3.5 w-4 h-4 text-muted" />
+            <input 
+              type="text" 
+              placeholder="Search users by email..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="premium-textarea pl-9 py-2.5 w-full text-sm"
+            />
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            disabled={logoutLoading}
+            className="flex items-center gap-2 px-4 py-2.5 bg-black/40 border border-white/10 hover:border-red-500/30 hover:bg-red-950/10 text-muted hover:text-red-400 transition-all rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-50 h-[46px]"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">{logoutLoading ? "..." : "Log Out"}</span>
+          </button>
         </div>
       </div>
 

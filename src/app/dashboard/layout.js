@@ -85,7 +85,9 @@ export default async function DashboardLayout({ children }) {
     </>
   );
 
-  const mainContent = (!isActive && !hasCredits) ? (
+  const isAdmin = user.isAdmin || user.email === "apnaipuwallah@gmail.com";
+
+  const mainContent = (!isActive && !hasCredits && !isAdmin) ? (
     <div className="flex-1 flex items-center justify-center p-4 md:p-6">
       <div className="max-w-md w-full p-6 md:p-8 rounded-2xl bg-charcoal border border-border text-center space-y-6 mx-4">
         <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto border border-gold/20 text-gold text-2xl font-serif italic">
