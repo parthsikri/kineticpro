@@ -15,6 +15,7 @@ export async function GET() {
       email: user.email,
       credits: user.credits,
       subscriptionStatus: user.subscriptionStatus,
+      subscriptionTier: user.subscriptionTier,
     },
   });
 }
