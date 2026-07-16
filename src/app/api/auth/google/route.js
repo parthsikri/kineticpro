@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
-function appUrl() {
-  const value = process.env.APP_URL;
-  if (!value) throw new Error("APP_URL is not configured");
-  return new URL(value).origin;
+function appUrl(req) {
+  if (process.env.APP_URL) return new URL(process.env.APP_URL).origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return req.nextUrl.origin;
 }
 
 export async function GET(req) {
-  const domain = appUrl();
+  const domain = appUrl(req);
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = `${domain}/api/auth/callback/google`;
