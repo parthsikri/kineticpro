@@ -19,6 +19,7 @@ const COLOR_PRESETS = [
 export default function ThumbnailForm({ onSubmit, loading }) {
   const [photos, setPhotos]                 = useState([]); // Array of { id, preview, base64 }
   const [brandColor, setBrandColor]         = useState("#1a3fd4");
+  const [highlightColor, setHighlightColor] = useState("#f5d800");
   const [colorPreset, setColorPreset]       = useState("royal-blue");
   const [customColor, setCustomColor]       = useState("#1a3fd4");
   const [videoTopic, setVideoTopic]         = useState("");
@@ -47,7 +48,49 @@ export default function ThumbnailForm({ onSubmit, loading }) {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  /* ── color preset ───────────────────────────────────────────── */
+  /* ── color logic ────────────────────────────────────────────── */
+  const getRecommendedHighlight = (hex) => {
+    if (!hex) return "#f5d800";
+    if (hex.indexOf('#') === 0) hex = hex.slice(1);
+    if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    let r = parseInt(hex.slice(0, 2), 16) / 255;
+    let g = parseInt(hex.slice(2, 4), 16) / 255;
+    let b = parseInt(hex.slice(4, 6), 16) / 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max == min) {
+      h = s = 0; // achromatic
+    } else {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    // Invert hue and boost saturation/lightness for a good highlight
+    h = (h + 0.5) % 1;
+    s = Math.min(1, s + 0.4);
+    l = Math.max(0.5, Math.min(0.8, l));
+    
+    let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    let p = 2 * l - q;
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    let rNew = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+    let gNew = Math.round(hue2rgb(p, q, h) * 255);
+    let bNew = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+    return "#" + (1 << 24 | rNew << 16 | gNew << 8 | bNew).toString(16).slice(1).toUpperCase();
+  };
+
   const handleColorPreset = (preset) => {
     setColorPreset(preset.id);
     if (preset.id !== "custom") setBrandColor(preset.hex);
@@ -58,7 +101,7 @@ export default function ThumbnailForm({ onSubmit, loading }) {
     e.preventDefault();
     if (!videoTopic.trim()) return;
     const subjectPhotos = photos.map(p => p.base64);
-    onSubmit({ videoTopic, brandColor, subjectPhotos, poseMode });
+    onSubmit({ videoTopic, brandColor, highlightColor, subjectPhotos, poseMode });
   };
 
   return (
@@ -225,6 +268,37 @@ export default function ThumbnailForm({ onSubmit, loading }) {
               <span className="text-xs font-mono text-off-white">{customColor.toUpperCase()}</span>
             </div>
           )}
+        </div>
+
+        {/* ── Highlight color ─────────────────────────────────────── */}
+        <div className="space-y-3">
+          <label className="premium-label flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-gold" />
+            Highlight Color
+            <span className="ml-2 text-[10px] text-muted normal-case font-normal tracking-normal">
+              For badges and text highlights
+            </span>
+          </label>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-dark-gray border border-border rounded-lg p-2 px-3">
+              <input type="color" value={highlightColor}
+                onChange={e => setHighlightColor(e.target.value)}
+                className="w-10 h-8 rounded border-0 bg-transparent cursor-pointer" />
+              <span className="text-xs font-mono text-off-white">{highlightColor.toUpperCase()}</span>
+            </div>
+
+            <button 
+              type="button" 
+              onClick={() => setHighlightColor(getRecommendedHighlight(brandColor))}
+              className="flex items-center gap-2 px-3 py-2 bg-black/40 border border-white/10 hover:border-gold/50 hover:bg-gold/5 transition-colors rounded-lg group"
+            >
+              <div 
+                className="w-4 h-4 rounded-full border border-white/20" 
+                style={{ backgroundColor: getRecommendedHighlight(brandColor) }}
+              />
+              <span className="text-xs text-muted group-hover:text-gold transition-colors">Use Recommended</span>
+            </button>
+          </div>
         </div>
 
         {/* ── Submit ────────────────────────────────────────────── */}

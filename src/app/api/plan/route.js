@@ -15,7 +15,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, brandColor, hasSubjectPhoto, subjectCount, poseMode } = body;
+    const { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode } = body;
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
 
@@ -23,7 +23,7 @@ export async function POST(request) {
     if (!apiKey) {
       console.log("DeepSeek key missing — returning smart fallback plan");
       await new Promise(r => setTimeout(r, 1400));
-      const plan = buildFallbackPlan({ videoTopic, brandColor, hasSubjectPhoto, poseMode });
+      const plan = buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode });
       return NextResponse.json({ success: true, plan, isMock: true });
     }
 
@@ -82,6 +82,7 @@ export async function POST(request) {
       userPrompt = [
         `VIDEO TOPIC (with answers): "${videoTopic}"`,
         `BRAND COLOR: ${brandColor}`,
+        `HIGHLIGHT COLOR: ${highlightColor || "#f5d800"}`,
         `SUBJECT: ${subjectInstruction}`,
         "",
         "Return the full plan:",
@@ -92,7 +93,7 @@ export async function POST(request) {
         '  "compositionStrategy": "1 sentence on visual layout",',
         '  "subjectPose": "A descriptive pose based ONLY on the emotion of the topic (e.g. \'looking stressed with hands on head\', \'holding up a paper victoriously\', \'looking confused\'). Do NOT default to pointing upward unless it fits.",',
         '  "overlayConfig": {',
-        '    "accentColor": "bright high-contrast hex (usually #f5d800 yellow)",',
+        '    "accentColor": "must use the exact HIGHLIGHT COLOR hex provided",',
         "    \"topBadge\": \"topic pill tag e.g. 'RGPV | MATHS-II' or null\",",
         '    "topBadgeColor": "badge background hex",',
         '    "headline1": "FIRST LINE — uppercase max 3 words (white text)",',
@@ -140,7 +141,7 @@ export async function POST(request) {
 
     // Build the COMPLETE thumbnail prompt — text fully included, nothing added in browser
     plan.imagePrompt = buildCompleteThumbnailPrompt(plan, {
-      brandColor, hasSubjectPhoto, subjectCount, poseMode,
+      brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode,
     });
 
     return NextResponse.json({ success: true, needsMoreInfo: false, plan });
@@ -156,9 +157,9 @@ export async function POST(request) {
    ALL text, badges, banners, overlays are specified here so they
    get BAKED INTO the generated image — nothing added in the browser.
    ══════════════════════════════════════════════════════════════════ */
-function buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subjectCount, poseMode }) {
+function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
   const oc     = plan.overlayConfig || {};
-  const accent = oc.accentColor || "#f5d800";
+  const accent = highlightColor || oc.accentColor || "#f5d800";
   const dynamicPose = plan.subjectPose || "pointing upward confidently or open-mouth shock";
 
   const subjectNote = hasSubjectPhoto
@@ -191,7 +192,7 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subje
     textElements.push(
       "MAIN HEADLINE — Left-center of frame, vertically centred, stacked:\n" +
       (h1 ? ("  Line 1: " + h1 + " — massive Impact/heavy condensed font, pure WHITE, extremely large, strong text-shadow\n") : "") +
-      (h2 ? ("  Line 2: " + h2 + " — same massive size, ITALIC, color " + accent + " (bright yellow), strong text-shadow\n") : "") +
+      (h2 ? ("  Line 2: " + h2 + " — same massive size, ITALIC, color " + accent + ", strong text-shadow\n") : "") +
       "  Both lines left-aligned"
     );
   }
@@ -222,7 +223,7 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subje
     const upper      = oc.bannerText.toUpperCase();
     const accentWord = oc.bannerAccentWord ? oc.bannerAccentWord.toUpperCase() : null;
     const bannerDesc = accentWord
-      ? ("\"" + upper + "\" — the word \"" + accentWord + "\" in " + accent + " (bright yellow), the rest in white")
+      ? ("\"" + upper + "\" — the word \"" + accentWord + "\" in " + accent + ", the rest in white")
       : ("\"" + upper + "\" in white");
     textElements.push(
       "FULL-WIDTH BOTTOM BANNER STRIP (spans entire width):\n" +
@@ -276,7 +277,7 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subje
 }
 
 /* ── Smart fallback (no API key) ──────────────────────────────────── */
-function buildFallbackPlan({ videoTopic, brandColor, hasSubjectPhoto, subjectCount, poseMode }) {
+function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
   const isSecondPass = videoTopic.includes("Additional details provided by creator:");
 
   if (!isSecondPass) {
@@ -326,7 +327,7 @@ function buildFallbackPlan({ videoTopic, brandColor, hasSubjectPhoto, subjectCou
   }
 
   const overlayConfig = {
-    accentColor: "#f5d800", topBadge, topBadgeColor: brandColor,
+    accentColor: highlightColor || "#f5d800", topBadge, topBadgeColor: brandColor,
     headline1, headline2, bannerText, bannerAccentWord,
     showAlertCard, alertTitle, alertBody, alertType,
     showDateCallout, dateText, dateIcon,
@@ -343,6 +344,6 @@ function buildFallbackPlan({ videoTopic, brandColor, hasSubjectPhoto, subjectCou
     imagePrompt: "",
   };
 
-  plan.imagePrompt = buildCompleteThumbnailPrompt(plan, { brandColor, hasSubjectPhoto, subjectCount, poseMode });
+  plan.imagePrompt = buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode });
   return plan;
 }

@@ -122,6 +122,7 @@ export default function Home() {
       body: JSON.stringify({
         videoTopic:      topicString,
         brandColor:      data.brandColor,
+        highlightColor:  data.highlightColor,
         hasSubjectPhoto: data.subjectPhotos?.length > 0,
         subjectCount:    data.subjectPhotos?.length || 0,
         poseMode:        data.poseMode || "ai",
