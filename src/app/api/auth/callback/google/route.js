@@ -6,8 +6,8 @@ import crypto from "crypto";
 
 function appUrl(req) {
   if (process.env.APP_URL) return new URL(process.env.APP_URL).origin;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return req.nextUrl.origin;
+  // Always use the primary production URL to avoid Google OAuth redirect_uri_mismatch
+  return "https://kineticpro.vercel.app";
 }
 
 function stateMatches(actual, expected) {
