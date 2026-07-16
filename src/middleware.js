@@ -4,6 +4,11 @@ export function middleware(req) {
   const session = req.cookies.get("session_id")?.value;
   const { pathname } = req.nextUrl;
 
+  // Legacy files may still exist on disk, but must never be served publicly.
+  if (pathname.startsWith("/uploads/")) {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+
   // Protect dashboard routes
   if (pathname.startsWith("/dashboard")) {
     if (!session) {
@@ -22,5 +27,5 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/dashboard(.*)", "/login", "/register"],
+  matcher: ["/dashboard(.*)", "/login", "/register", "/uploads/:path*"],
 };

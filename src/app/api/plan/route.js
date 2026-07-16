@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "../../../lib/auth";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 /* ────────────────────────────────────────────────────────────────
    AI decides EVERYTHING from minimal input.
@@ -9,6 +10,8 @@ import { getSessionUser } from "../../../lib/auth";
 
 export async function POST(request) {
   try {
+    const rateLimit = checkRateLimit(request, "plan", 30, 60 * 60 * 1000);
+    if (!rateLimit.allowed) return NextResponse.json({ success: false, error: "Planning limit reached. Please try again later." }, { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } });
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -16,6 +19,9 @@ export async function POST(request) {
 
     const body = await request.json();
     const { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode } = body;
+    if (typeof videoTopic !== "string" || videoTopic.trim().length === 0 || videoTopic.length > 8_000) {
+      return NextResponse.json({ success: false, error: "Video topic must be between 1 and 8,000 characters." }, { status: 400 });
+    }
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
 
@@ -148,7 +154,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("Plan Route Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Planning failed. Please try again." }, { status: 500 });
   }
 }
 

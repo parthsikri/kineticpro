@@ -91,7 +91,7 @@ export default async function DashboardLayout({ children }) {
         </div>
         <div>
           <h2 className="text-2xl font-semibold text-white mb-2">Upgrade to Continue</h2>
-          <p className="text-sm text-muted">You've used your free trial. Upgrade to Kinetic Pro to unlock 7 thumbnails per week.</p>
+          <p className="text-sm text-muted">You&apos;ve used your free trial. Upgrade to Kinetic Pro to unlock 7 thumbnails per week.</p>
         </div>
         <div className="space-y-3">
           <Link href="/dashboard/pricing" className="premium-btn w-full py-4 block">

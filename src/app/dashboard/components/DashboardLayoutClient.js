@@ -3,18 +3,9 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 
 export default function DashboardLayoutClient({ sidebarContent, mainContent }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
   return (
     <div className="flex h-screen overflow-hidden bg-dark-gray flex-col md:flex-row">
       {/* Mobile Header */}

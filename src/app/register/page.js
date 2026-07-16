@@ -18,7 +18,8 @@ export default function RegisterPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const err = urlParams.get("error");
       if (err) {
-        setError(err);
+        const timer = setTimeout(() => setError(err), 0);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -105,7 +106,7 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 6 characters"
+                placeholder="Minimum 12 characters"
                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-black border border-border text-sm text-off-white placeholder:text-muted focus:outline-none focus:border-gold transition-colors"
               />
             </div>

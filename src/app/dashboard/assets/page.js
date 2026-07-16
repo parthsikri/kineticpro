@@ -3,15 +3,17 @@ import { prisma } from "../../../lib/prisma";
 import { getSessionUser } from "../../../lib/auth";
 import { redirect } from "next/navigation";
 import { Image as ImageIcon } from "lucide-react";
+import { withSignedImageUrls } from "../../../lib/storage";
 
 export default async function AssetsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const images = await prisma.userImage.findMany({
+  const imageRecords = await prisma.userImage.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
+  const images = await withSignedImageUrls(imageRecords);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
@@ -43,7 +45,7 @@ export default async function AssetsPage() {
           <ImageIcon className="w-12 h-12 text-muted mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-white mb-2">No Assets Yet</h2>
           <p className="text-sm text-muted max-w-md mx-auto">
-            You haven't uploaded any photos to your library yet. Go to the Generator and upload a subject photo to save it here automatically!
+            You haven&apos;t uploaded any photos to your library yet. Go to the Generator and upload a subject photo to save it here automatically!
           </p>
         </div>
       )}

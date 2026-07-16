@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getSessionUser } from "../../../lib/auth";
+import { withSignedImageUrls } from "../../../lib/storage";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json({ success: true, images });
+    return NextResponse.json({ success: true, images: await withSignedImageUrls(images) });
   } catch (error) {
     console.error("History Route Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

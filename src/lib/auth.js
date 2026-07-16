@@ -2,23 +2,56 @@ import crypto from "crypto";
 import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 
-// 1. Password hashing
+const SCRYPT_N = 1 << 15;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEY_LENGTH = 64;
+
+function timingSafeEqual(left, right) {
+  const leftBuffer = Buffer.from(left, "hex");
+  const rightBuffer = Buffer.from(right, "hex");
+  return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+// Password hashing. Legacy PBKDF2 hashes remain verifiable and are upgraded on login.
 export function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
-  return `${salt}:${hash}`;
+  const hash = crypto.scryptSync(password, salt, SCRYPT_KEY_LENGTH, {
+    N: SCRYPT_N,
+    r: SCRYPT_R,
+    p: SCRYPT_P,
+    maxmem: 128 * SCRYPT_N * SCRYPT_R + 1024 * 1024,
+  }).toString("hex");
+  return `scrypt$${SCRYPT_N}$${SCRYPT_R}$${SCRYPT_P}$${salt}$${hash}`;
 }
 
 export function verifyPassword(password, storedPassword) {
-  if (!storedPassword || !storedPassword.includes(":")) return false;
+  if (!storedPassword) return false;
+
+  if (storedPassword.startsWith("scrypt$")) {
+    const [, n, r, p, salt, originalHash] = storedPassword.split("$");
+    const params = { N: Number(n), r: Number(r), p: Number(p), maxmem: 128 * Number(n) * Number(r) + 1024 * 1024 };
+    if (!salt || !originalHash || !Number.isSafeInteger(params.N) || !Number.isSafeInteger(params.r) || !Number.isSafeInteger(params.p)) return false;
+    const hash = crypto.scryptSync(password, salt, SCRYPT_KEY_LENGTH, params).toString("hex");
+    return timingSafeEqual(hash, originalHash);
+  }
+
+  // Existing accounts created before this upgrade use this legacy format.
+  if (!storedPassword.includes(":")) return false;
   const [salt, originalHash] = storedPassword.split(":");
   const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
-  return hash === originalHash;
+  return timingSafeEqual(hash, originalHash);
+}
+
+export function needsPasswordRehash(storedPassword) {
+  return !storedPassword?.startsWith("scrypt$");
 }
 
 // 2. Session lifecycle
 export async function createSession(userId) {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  // One active session per account limits the blast radius of a stolen cookie.
+  await prisma.session.deleteMany({ where: { userId } });
   const session = await prisma.session.create({
     data: {
       userId,

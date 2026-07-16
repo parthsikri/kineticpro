@@ -37,7 +37,7 @@ export default function HistoryPage() {
       if (url.startsWith("data:")) {
         const link = document.createElement("a");
         link.href = url;
-        link.download = `kineticpro_${Date.now()}.png`;
+        link.download = "kineticpro-thumbnail.png";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -49,7 +49,7 @@ export default function HistoryPage() {
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
-      link.download = `kineticpro_${Date.now()}.png`;
+      link.download = "kineticpro-thumbnail.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

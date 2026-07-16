@@ -1,18 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { createSession } from "../../../../../lib/auth";
+import { cookies } from "next/headers";
+import crypto from "crypto";
+
+function appUrl() {
+  const value = process.env.APP_URL;
+  if (!value) throw new Error("APP_URL is not configured");
+  return new URL(value).origin;
+}
+
+function stateMatches(actual, expected) {
+  if (!actual || !expected) return false;
+  const actualBuffer = Buffer.from(actual);
+  const expectedBuffer = Buffer.from(expected);
+  return actualBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(actualBuffer, expectedBuffer);
+}
 
 export async function GET(req) {
+  const domain = appUrl();
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
     const error = searchParams.get("error");
+    const state = searchParams.get("state");
+    const cookieStore = await cookies();
+    const expectedState = cookieStore.get("oauth_state")?.value;
+    cookieStore.delete("oauth_state");
 
-    const protocol = req.headers.get("x-forwarded-proto") || "http";
-    const host = req.headers.get("host");
-    const domain = `${protocol}://${host}`;
-
-    if (error || !code) {
+    if (error || !code || !stateMatches(state, expectedState)) {
       return NextResponse.redirect(`${domain}/login?error=${encodeURIComponent(error || "Google auth failed")}`);
     }
 
@@ -55,7 +71,7 @@ export async function GET(req) {
     const profile = await profileResponse.json();
     const email = profile.email;
 
-    if (!email) {
+    if (!email || (profile.verified_email !== true && profile.verified_email !== "true")) {
       return NextResponse.redirect(`${domain}/login?error=No+email+returned+from+Google`);
     }
 

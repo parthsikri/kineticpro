@@ -46,3 +46,12 @@ next-env.d.ts
 # sqlite
 *.db
 *.db-journal
+
+# Local maintenance scripts may contain credentials or print production data
+/setup-bucket.js
+/test.js
+/public/uploads/
+
+# Never commit any .env variant
+.env
+.env.*

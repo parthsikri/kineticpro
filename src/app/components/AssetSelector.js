@@ -9,13 +9,8 @@ export default function AssetSelector({ onSelect, selectedBase64 }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchImages();
-  }, []);
-
-  const fetchImages = async () => {
+  async function fetchImages() {
     try {
-      setLoading(true);
       const res = await fetch("/api/assets");
       const data = await res.json();
       if (data.success) {
@@ -26,7 +21,12 @@ export default function AssetSelector({ onSelect, selectedBase64 }) {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => { void fetchImages(); }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];

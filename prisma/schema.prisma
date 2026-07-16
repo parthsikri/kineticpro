@@ -25,6 +25,7 @@ model User {
   updatedAt          DateTime    @updatedAt
   sessions           Session[]
   images             UserImage[]
+  paymentOrders      PaymentOrder[]
 }
 
 model Session {
@@ -42,4 +43,19 @@ model UserImage {
   filename  String
   url       String
   createdAt DateTime @default(now())
+}
+
+model PaymentOrder {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?  @unique
+  tier              String
+  amount            Int
+  currency          String
+  status            String   @default("created")
+  createdAt         DateTime @default(now())
+  paidAt            DateTime?
+  updatedAt         DateTime @updatedAt
 }

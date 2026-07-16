@@ -9,11 +9,12 @@ function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState(30 * 60);
 
   useEffect(() => {
+    let initialUpdate;
     // Check if we have a saved end time in localStorage to persist across reloads
     const savedEndTime = localStorage.getItem("kinetic_offer_end");
     if (savedEndTime) {
       const remaining = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
-      setTimeLeft(remaining);
+      initialUpdate = setTimeout(() => setTimeLeft(remaining), 0);
     } else {
       const endTime = Date.now() + 30 * 60 * 1000;
       localStorage.setItem("kinetic_offer_end", endTime.toString());
@@ -29,7 +30,10 @@ function CountdownTimer() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(initialUpdate);
+    };
   }, []);
 
   const minutes = Math.floor(timeLeft / 60);
@@ -73,7 +77,7 @@ export default function PricingPage() {
           Upgrade your <span className="text-gold font-serif italic font-normal">Kinetic</span> power.
         </h1>
         <p className="text-muted text-lg max-w-2xl mx-auto px-4">
-          Choose the plan that fits your channel's growth. Stop wasting hours on Photoshop and start generating high-CTR thumbnails instantly.
+          Choose the plan that fits your channel&apos;s growth. Stop wasting hours on Photoshop and start generating high-CTR thumbnails instantly.
         </p>
       </div>
 
@@ -89,7 +93,7 @@ export default function PricingPage() {
           <div className="flex items-center justify-between mb-8">
             <div className="space-y-1">
               <div className="flex items-end gap-2">
-                <span className="text-4xl font-bold text-white">₹299</span>
+                <span className="text-4xl font-bold text-white">₹999</span>
                 <span className="text-muted text-sm pb-1">/mo</span>
               </div>
               <div className="text-sm text-muted opacity-0 select-none">Spacer</div>
@@ -135,7 +139,7 @@ export default function PricingPage() {
                 <span className="text-4xl font-bold text-white">₹299</span>
                 <span className="text-muted text-sm pb-1">/mo</span>
               </div>
-              <div className="text-sm text-muted line-through decoration-red-500/50 decoration-2">₹999/mo</div>
+              <div className="text-sm text-muted opacity-0 select-none">Spacer</div>
             </div>
             <CountdownTimer />
           </div>

@@ -17,7 +17,8 @@ export default function LoginPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const err = urlParams.get("error");
       if (err) {
-        setError(err);
+        const timer = setTimeout(() => setError(err), 0);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -150,7 +151,7 @@ export default function LoginPage() {
 
         <div className="text-center pt-2">
           <p className="text-xs text-muted">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-gold hover:underline font-semibold">
               Create an account
             </Link>

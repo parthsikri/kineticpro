@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getSessionUser } from "../../../lib/auth";
-import fs from "fs/promises";
-import path from "path";
+import { newStoragePath, parseImageDataUri } from "../../../lib/images";
+import { uploadPrivateImage, withSignedImageUrls } from "../../../lib/storage";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 export async function GET(request) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, images });
+    return NextResponse.json({ success: true, images: await withSignedImageUrls(images) });
   } catch (error) {
     console.error("GET Assets error:", error);
     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
@@ -25,41 +26,33 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const rateLimit = checkRateLimit(request, "asset-upload", 20, 60 * 60 * 1000);
+    if (!rateLimit.allowed) return NextResponse.json({ success: false, error: "Upload limit reached. Please try again later." }, { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } });
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { imageBase64, filename = "upload.png" } = body;
+    const { imageBase64 } = body;
     
     if (!imageBase64) {
       return NextResponse.json({ success: false, error: "No image provided" }, { status: 400 });
     }
 
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-    const imageBuffer = Buffer.from(base64Data, "base64");
-    
-    const uniqueFilename = `${user.id.slice(0,8)}_${Date.now()}_${filename.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    
-    // Ensure dir exists
-    await fs.mkdir(uploadsDir, { recursive: true });
-    
-    const filePath = path.join(uploadsDir, uniqueFilename);
-    await fs.writeFile(filePath, imageBuffer);
-
-    const publicUrl = `/uploads/${uniqueFilename}`;
+    const image = parseImageDataUri(imageBase64, "Upload");
+    const storagePath = newStoragePath("assets", user.id, image.extension);
+    await uploadPrivateImage(storagePath, image.buffer, image.mimeType);
 
     const newImage = await prisma.userImage.create({
       data: {
         userId: user.id,
-        filename: uniqueFilename,
-        url: publicUrl,
+        filename: storagePath.split("/").at(-1),
+        url: storagePath,
       },
     });
 
-    return NextResponse.json({ success: true, image: newImage });
+    return NextResponse.json({ success: true, image: (await withSignedImageUrls([newImage]))[0] });
   } catch (error) {
     console.error("POST Assets error:", error);
     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });

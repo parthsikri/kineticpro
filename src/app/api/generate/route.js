@@ -1,42 +1,74 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { getSessionUser } from "../../../lib/auth";
-import { createClient } from "@supabase/supabase-js";
+import { newStoragePath, parseImageDataUri } from "../../../lib/images";
+import { getSignedImageUrl, uploadPrivateImage } from "../../../lib/storage";
+import { checkRateLimit } from "../../../lib/rate-limit";
+
+class CreditError extends Error {}
+
+async function reserveCredits(userId) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new CreditError("Unauthorized");
+
+  const isPro = user.subscriptionStatus === "active";
+  const isElite = isPro && user.subscriptionTier === "elite";
+  const amount = isElite ? 3 : 1;
+
+  if (isPro) {
+    const now = new Date();
+    const nextReset = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await prisma.user.updateMany({
+      where: { id: userId, subscriptionStatus: "active", OR: [{ proCreditsResetAt: null }, { proCreditsResetAt: { lte: now } }] },
+      data: { proCreditsUsed: 0, proCreditsResetAt: nextReset },
+    });
+    const reserved = await prisma.user.updateMany({
+      where: { id: userId, subscriptionStatus: "active", proCreditsUsed: { lte: 21 - amount } },
+      data: { proCreditsUsed: { increment: amount } },
+    });
+    if (reserved.count !== 1) throw new CreditError("Weekly generation limit reached.");
+  } else {
+    const reserved = await prisma.user.updateMany({
+      where: { id: userId, subscriptionStatus: { not: "active" }, credits: { gte: amount } },
+      data: { credits: { decrement: amount } },
+    });
+    if (reserved.count !== 1) throw new CreditError("Out of credits. Please upgrade to Pro.");
+  }
+
+  return { isPro, isElite, amount };
+}
+
+async function refundCredits(userId, reservation) {
+  if (!reservation) return;
+  if (reservation.isPro) {
+    await prisma.user.update({ where: { id: userId }, data: { proCreditsUsed: { decrement: reservation.amount } } }).catch(() => {});
+  } else {
+    await prisma.user.update({ where: { id: userId }, data: { credits: { increment: reservation.amount } } }).catch(() => {});
+  }
+}
 
 export async function POST(request) {
+  let reservation;
+  let userId;
   try {
-    // 1. Authenticate and check limits
-    const dbUser = await getSessionUser();
-    if (!dbUser) {
+    const rateLimit = checkRateLimit(request, "generate", 30, 60 * 60 * 1000);
+    if (!rateLimit.allowed) return NextResponse.json({ success: false, error: "Generation limit reached. Please try again later." }, { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } });
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const isPro = dbUser.subscriptionStatus === "active";
-    const isElite = dbUser.subscriptionTier === "elite";
-    const numGenerations = isElite ? 3 : 1;
-    
-    if (isPro) {
-      const now = new Date();
-      let used = dbUser.proCreditsUsed;
-      
-      if (!dbUser.proCreditsResetAt || now > dbUser.proCreditsResetAt) {
-        used = 0;
-        const nextReset = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        await prisma.user.update({
-          where: { id: dbUser.id },
-          data: { proCreditsUsed: 0, proCreditsResetAt: nextReset },
-        });
-      }
-
-      if (used + numGenerations > 21) {
-        return NextResponse.json({ success: false, error: `Not enough credits for ${numGenerations} generations. Weekly limit reached.` }, { status: 403 });
-      }
-    } else if (dbUser.credits < numGenerations) {
-      return NextResponse.json({ success: false, error: "Out of credits. Please upgrade to Pro." }, { status: 403 });
     }
 
     const body = await request.json();
     const { imagePrompt, subjectPhotoBase64, brandLogoBase64, hasLogo } = body;
+    if (typeof imagePrompt !== "string" || imagePrompt.trim().length === 0 || imagePrompt.length > 8_000) {
+      return NextResponse.json({ success: false, error: "Image prompt must be between 1 and 8,000 characters." }, { status: 400 });
+    }
+    const subjectImage = subjectPhotoBase64 ? parseImageDataUri(subjectPhotoBase64, "Subject photo") : null;
+    const logoImage = hasLogo && brandLogoBase64 ? parseImageDataUri(brandLogoBase64, "Brand logo") : null;
+
+    userId = sessionUser.id;
+    reservation = await reserveCredits(userId);
+    const { isElite, amount: numGenerations } = reservation;
 
     const apiKey   = process.env.OPENAI_API_KEY;
     const modelName = process.env.IMAGE_MODEL_NAME || "gpt-image-2";
@@ -54,7 +86,7 @@ export async function POST(request) {
       let mockResults = Array.from({ length: numGenerations }).map(() => {
         return mockUrls[Math.floor(Math.random() * mockUrls.length)];
       });
-      mockResults = await saveImagesToDiskAndDB(mockResults, dbUser.id);
+      mockResults = await saveImagesToStorageAndDB(mockResults, userId);
       return NextResponse.json({ success: true, imageUrls: mockResults, isMock: true });
     }
 
@@ -72,25 +104,15 @@ export async function POST(request) {
         variantPrompt = `${imagePrompt}\n\n[Variant Variation]: ${variations[index - 1]}`;
       }
 
-      if (subjectPhotoBase64) {
+      if (subjectImage) {
         /* ── PATH A: Subject photo → /v1/images/edits ──────────── */
         console.log(`Subject photo detected — using /v1/images/edits (Variant ${index})`);
 
-        const base64Data  = subjectPhotoBase64.replace(/^data:image\/\w+;base64,/, "");
-        const imageBuffer = Buffer.from(base64Data, "base64");
-        const mimeMatch   = subjectPhotoBase64.match(/^data:(image\/\w+);base64,/);
-        const mimeType    = mimeMatch ? mimeMatch[1] : "image/png";
-        const ext         = mimeType.split("/")[1] || "png";
-
         const formData = new FormData();
-        formData.append("image", new Blob([imageBuffer], { type: mimeType }), `subject.${ext}`);
+        formData.append("image", new Blob([subjectImage.buffer], { type: subjectImage.mimeType }), `subject.${subjectImage.extension}`);
 
-        if (hasLogo && brandLogoBase64) {
-          const logoBase64  = brandLogoBase64.replace(/^data:image\/\w+;base64,/, "");
-          const logoBuffer  = Buffer.from(logoBase64, "base64");
-          const logoMime    = (brandLogoBase64.match(/^data:(image\/\w+);base64,/) || [])[1] || "image/png";
-          const logoExt     = logoMime.split("/")[1] || "png";
-          formData.append("image", new Blob([logoBuffer], { type: logoMime }), `logo.${logoExt}`);
+        if (logoImage) {
+          formData.append("image", new Blob([logoImage.buffer], { type: logoImage.mimeType }), `logo.${logoImage.extension}`);
         }
 
         const editPrompt = `${variantPrompt}
@@ -132,82 +154,32 @@ CRITICAL: Use the person from the provided reference photo as the subject. Prese
     const promises = Array.from({ length: numGenerations }).map((_, i) => generateVariant(i));
     imageUrls = await Promise.all(promises);
 
-    // Save images to disk and database
-    imageUrls = await saveImagesToDiskAndDB(imageUrls, dbUser.id);
-
-    // 2. Deduct credit if successful
-    if (imageUrls.length > 0) {
-      const incrementAmount = imageUrls.length;
-      if (isPro) {
-        await prisma.user.update({
-          where: { id: dbUser.id },
-          data: { proCreditsUsed: { increment: incrementAmount } },
-        });
-      } else {
-        await prisma.user.update({
-          where: { id: dbUser.id },
-          data: { credits: { decrement: incrementAmount } },
-        });
-      }
-    }
+    // Save images to private storage and database
+    imageUrls = await saveImagesToStorageAndDB(imageUrls, userId);
 
     return NextResponse.json({ success: true, imageUrls });
 
   } catch (error) {
+    await refundCredits(userId, reservation);
     console.error("Generate Route Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const status = error instanceof CreditError ? 403 : 500;
+    return NextResponse.json({ success: false, error: error instanceof CreditError ? error.message : "Image generation failed. Please try again." }, { status });
   }
 }
 
 /* ── Save images to Supabase & DB helper ────────────────────────────── */
-async function saveImagesToDiskAndDB(urls, userId) {
+async function saveImagesToStorageAndDB(urls, userId) {
   if (!urls || urls.length === 0) return urls;
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Missing Supabase credentials, falling back to original URLs.");
-    return urls;
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
   const savedUrls = [];
 
   for (let i = 0; i < urls.length; i++) {
     const b64Data = urls[i];
     if (b64Data.startsWith("data:")) {
-      const match = b64Data.match(/^data:image\/(\w+);base64,(.+)$/);
-      if (match) {
-        const ext = match[1] === "jpeg" ? "jpg" : match[1];
-        const base64String = match[2];
-        const filename = `${userId}/thumb_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-        
-        const buffer = Buffer.from(base64String, "base64");
-        
-        const { data, error } = await supabase
-          .storage
-          .from("thumbnails")
-          .upload(filename, buffer, {
-            contentType: `image/${ext}`,
-            upsert: false
-          });
-
-        if (error) {
-          console.error("Supabase Storage Error:", error);
-          savedUrls.push(b64Data); // Fallback
-        } else {
-          const { data: publicUrlData } = supabase.storage.from("thumbnails").getPublicUrl(filename);
-          const urlToReturn = publicUrlData.publicUrl;
-
-          await prisma.userImage.create({
-            data: { userId, filename, url: urlToReturn }
-          });
-          savedUrls.push(urlToReturn);
-        }
-      } else {
-        savedUrls.push(b64Data); // Fallback if match fails
-      }
+      const image = parseImageDataUri(b64Data, "Generated image");
+      const storagePath = newStoragePath("generated", userId, image.extension);
+      await uploadPrivateImage(storagePath, image.buffer, image.mimeType);
+      await prisma.userImage.create({ data: { userId, filename: storagePath.split("/").at(-1), url: storagePath } });
+      savedUrls.push(await getSignedImageUrl(storagePath));
     } else if (b64Data.startsWith("http")) {
       await prisma.userImage.create({
         data: { userId, filename: `remote_${Date.now()}_${i}.jpg`, url: b64Data }
