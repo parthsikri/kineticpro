@@ -24,9 +24,9 @@ export async function GET(request) {
       data: {
         email,
         password: hashedPassword,
-        subscriptionStatus: "active",
-        subscriptionTier: "elite",
-        credits: 100,
+        subscriptionStatus: "inactive",
+        subscriptionTier: "free",
+        credits: 1,
       }
     });
 
