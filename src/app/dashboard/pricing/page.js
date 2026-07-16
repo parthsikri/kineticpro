@@ -46,6 +46,26 @@ function CountdownTimer() {
 }
 
 export default function PricingPage() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error();
+      })
+      .then((data) => {
+        if (data.success && data.authenticated) {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const isActive = user?.subscriptionStatus === "active";
+  const isElite = isActive && user?.subscriptionTier === "elite";
+  const isPro = isActive && !isElite;
+
   return (
     <div className="max-w-5xl mx-auto space-y-12 animate-fadeIn">
       <div className="text-center space-y-4">
@@ -83,9 +103,15 @@ export default function PricingPage() {
             <Feature icon={<Check className="text-gold w-5 h-5" />} text="High CTR Format Library" />
           </div>
 
-          <UpgradeButton tier="pro" className="w-full text-sm uppercase tracking-widest font-bold bg-charcoal border border-gold/30 text-gold py-4 rounded-xl hover:bg-gold/10 transition-all group-hover:border-gold flex items-center justify-center">
-            Get Kinetic Pro
-          </UpgradeButton>
+          {isPro || isElite ? (
+            <button disabled className="w-full text-sm uppercase tracking-widest font-bold bg-white/5 border border-white/10 text-white/50 py-4 rounded-xl cursor-not-allowed flex items-center justify-center">
+              {isPro ? "Current Plan" : "Included in Elite"}
+            </button>
+          ) : (
+            <UpgradeButton tier="pro" className="w-full text-sm uppercase tracking-widest font-bold bg-charcoal border border-gold/30 text-gold py-4 rounded-xl hover:bg-gold/10 transition-all group-hover:border-gold flex items-center justify-center">
+              Get Kinetic Pro
+            </UpgradeButton>
+          )}
         </div>
 
         {/* Elite Plan */}
@@ -121,9 +147,15 @@ export default function PricingPage() {
             <Feature icon={<Check className="text-purple-400 w-5 h-5" />} text="Priority Generation Queue" />
           </div>
 
-          <UpgradeButton tier="elite" className="w-full text-sm uppercase tracking-widest font-bold bg-purple-600 text-white py-4 rounded-xl hover:bg-purple-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/20 flex items-center justify-center">
-            Get Kinetic Elite
-          </UpgradeButton>
+          {isElite ? (
+            <button disabled className="w-full text-sm uppercase tracking-widest font-bold bg-white/5 border border-white/10 text-white/50 py-4 rounded-xl cursor-not-allowed flex items-center justify-center">
+              Current Plan
+            </button>
+          ) : (
+            <UpgradeButton tier="elite" className="w-full text-sm uppercase tracking-widest font-bold bg-purple-600 text-white py-4 rounded-xl hover:bg-purple-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/20 flex items-center justify-center">
+              {isPro ? "Upgrade to Elite" : "Get Kinetic Elite"}
+            </UpgradeButton>
+          )}
         </div>
 
       </div>
