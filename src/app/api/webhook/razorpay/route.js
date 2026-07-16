@@ -2,20 +2,6 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "../../../../lib/prisma";
 
-/**
- * Razorpay Webhook Handler
- *
- * Receives server-to-server events from Razorpay so payment state is
- * updated even if the user closes the browser before /api/verify-payment runs.
- *
- * Setup in Razorpay Dashboard → Webhooks → Add URL:
- *   https://yourdomain.com/api/webhook/razorpay
- * Events to subscribe: payment.captured, payment.failed, order.paid
- *
- * Set RAZORPAY_WEBHOOK_SECRET in your env to the secret Razorpay shows
- * when you create the webhook endpoint.
- */
-
 function verifyWebhookSignature(body, signature, secret) {
   const expected = crypto
     .createHmac("sha256", secret)
@@ -29,7 +15,6 @@ function verifyWebhookSignature(body, signature, secret) {
 export async function POST(request) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   if (!secret) {
-    // Webhook secret not configured — refuse to process to avoid spoofing.
     console.error("[RAZORPAY_WEBHOOK] RAZORPAY_WEBHOOK_SECRET is not set");
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
@@ -39,7 +24,6 @@ export async function POST(request) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
-  // Read raw body for HMAC verification (must not parse JSON first).
   const rawBody = await request.text();
 
   if (!verifyWebhookSignature(rawBody, signature, secret)) {
@@ -67,10 +51,9 @@ export async function POST(request) {
       const paymentStatus = payment?.status;
 
       if (!orderId || !paymentId) {
-        return NextResponse.json({ received: true }); // Not an order we care about
+        return NextResponse.json({ received: true });
       }
 
-      // Look up our internal order record
       const order = await prisma.paymentOrder.findUnique({
         where: { razorpayOrderId: orderId },
       });
@@ -81,17 +64,14 @@ export async function POST(request) {
       }
 
       if (order.status === "paid") {
-        // Already processed (duplicate webhook delivery is normal — be idempotent)
         return NextResponse.json({ received: true });
       }
 
-      // Validate the amount matches what we originally created the order for.
       if (amountPaid !== order.amount || currency !== order.currency || paymentStatus !== "captured") {
         console.error("[RAZORPAY_WEBHOOK] Payment details mismatch for order:", orderId, {
           expected: { amount: order.amount, currency: order.currency },
           received: { amount: amountPaid, currency, paymentStatus },
         });
-        // Mark as failed so it can be investigated
         await prisma.paymentOrder.update({
           where: { id: order.id },
           data: { status: "failed" },
@@ -99,26 +79,25 @@ export async function POST(request) {
         return NextResponse.json({ received: true });
       }
 
-      // All checks passed — atomically mark order paid and upgrade user
+      // Calculate subscription expiry: 4 weeks from now
+      const subscriptionExpiresAt = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000);
+
       await prisma.$transaction([
         prisma.paymentOrder.update({
           where: { id: order.id },
-          data: {
-            status: "paid",
-            razorpayPaymentId: paymentId,
-            paidAt: new Date(),
-          },
+          data: { status: "paid", razorpayPaymentId: paymentId, paidAt: new Date() },
         }),
         prisma.user.update({
           where: { id: order.userId },
           data: {
             subscriptionStatus: "active",
             subscriptionTier: order.tier,
+            subscriptionExpiresAt,
           },
         }),
       ]);
 
-      console.log(`[RAZORPAY_WEBHOOK] User ${order.userId} upgraded to ${order.tier}`);
+      console.log(`[RAZORPAY_WEBHOOK] User ${order.userId} upgraded to ${order.tier}, expires ${subscriptionExpiresAt.toISOString()}`);
 
     } else if (eventType === "payment.failed") {
       const payment = event?.payload?.payment?.entity;
@@ -132,9 +111,10 @@ export async function POST(request) {
     }
 
     return NextResponse.json({ received: true });
+
   } catch (error) {
+    // P1 fix: return 500 so Razorpay retries on transient DB failures
     console.error("[RAZORPAY_WEBHOOK] Processing error:", error);
-    // Return 200 so Razorpay doesn't keep retrying for internal errors
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ error: "Internal processing error" }, { status: 500 });
   }
 }

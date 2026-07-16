@@ -6,6 +6,7 @@ import LogoutButton from "./LogoutButton";
 import UpgradeButton from "./UpgradeButton";
 import SidebarNav from "./components/SidebarNav";
 import DashboardLayoutClient from "./components/DashboardLayoutClient";
+import { PLANS } from "../../lib/plans";
 
 export default async function DashboardLayout({ children }) {
   const user = await getSessionUser();
@@ -19,7 +20,8 @@ export default async function DashboardLayout({ children }) {
   const isPro = isActive && !isElite;
   const hasCredits = user.credits > 0;
 
-  const limit = isElite ? 21 : 7;
+  const planKey = isElite ? "elite" : "pro";
+  const limit = isActive ? PLANS[planKey].weeklyLimit : 0;
   const creditsRemaining = Math.max(0, limit - (user.proCreditsUsed || 0));
 
   const sidebarContent = (

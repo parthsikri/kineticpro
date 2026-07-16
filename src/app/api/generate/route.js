@@ -4,6 +4,7 @@ import { getSessionUser } from "../../../lib/auth";
 import { newStoragePath, parseImageDataUri } from "../../../lib/images";
 import { getSignedImageUrl, uploadPrivateImage } from "../../../lib/storage";
 import { checkRateLimit } from "../../../lib/rate-limit";
+import { PLANS } from "../../../lib/plans";
 
 class CreditError extends Error {}
 
@@ -13,37 +14,54 @@ async function reserveCredits(userId) {
 
   const isPro = user.subscriptionStatus === "active";
   const isElite = isPro && user.subscriptionTier === "elite";
-  const amount = isElite ? 3 : 1;
+
+  // Check subscription has not expired
+  if (isPro && user.subscriptionExpiresAt && new Date() > user.subscriptionExpiresAt) {
+    // Expire the subscription atomically
+    await prisma.user.updateMany({
+      where: { id: userId, subscriptionStatus: "active" },
+      data: { subscriptionStatus: "expired" },
+    });
+    throw new CreditError("Your subscription has expired. Please renew to continue generating.");
+  }
+
+  const planKey = isElite ? "elite" : "pro";
+  const plan = PLANS[planKey];
+  // Each generation run consumes 1 slot regardless of variant count
+  const weeklySlotCost = 1;
+  const numGenerations = isPro ? plan.generations : 1;
 
   if (isPro) {
     const now = new Date();
-    const nextReset = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    // Reset weekly counter if window has passed
     await prisma.user.updateMany({
       where: { id: userId, subscriptionStatus: "active", OR: [{ proCreditsResetAt: null }, { proCreditsResetAt: { lte: now } }] },
-      data: { proCreditsUsed: 0, proCreditsResetAt: nextReset },
+      data: { proCreditsUsed: 0, proCreditsResetAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) },
     });
+    // Atomically reserve one slot
+    const weeklyLimit = plan.weeklyLimit;
     const reserved = await prisma.user.updateMany({
-      where: { id: userId, subscriptionStatus: "active", proCreditsUsed: { lte: 21 - amount } },
-      data: { proCreditsUsed: { increment: amount } },
+      where: { id: userId, subscriptionStatus: "active", proCreditsUsed: { lte: weeklyLimit - weeklySlotCost } },
+      data: { proCreditsUsed: { increment: weeklySlotCost } },
     });
-    if (reserved.count !== 1) throw new CreditError("Weekly generation limit reached.");
+    if (reserved.count !== 1) throw new CreditError(`Weekly limit of ${weeklyLimit} thumbnails reached. Resets next week.`);
   } else {
     const reserved = await prisma.user.updateMany({
-      where: { id: userId, subscriptionStatus: { not: "active" }, credits: { gte: amount } },
-      data: { credits: { decrement: amount } },
+      where: { id: userId, subscriptionStatus: { not: "active" }, credits: { gte: 1 } },
+      data: { credits: { decrement: 1 } },
     });
     if (reserved.count !== 1) throw new CreditError("Out of credits. Please upgrade to Pro.");
   }
 
-  return { isPro, isElite, amount };
+  return { isPro, isElite, numGenerations };
 }
 
 async function refundCredits(userId, reservation) {
   if (!reservation) return;
   if (reservation.isPro) {
-    await prisma.user.update({ where: { id: userId }, data: { proCreditsUsed: { decrement: reservation.amount } } }).catch(() => {});
+    await prisma.user.update({ where: { id: userId }, data: { proCreditsUsed: { decrement: 1 } } }).catch(() => {});
   } else {
-    await prisma.user.update({ where: { id: userId }, data: { credits: { increment: reservation.amount } } }).catch(() => {});
+    await prisma.user.update({ where: { id: userId }, data: { credits: { increment: 1 } } }).catch(() => {});
   }
 }
 
@@ -67,36 +85,36 @@ export async function POST(request) {
     const logoImage = hasLogo && brandLogoBase64 ? parseImageDataUri(brandLogoBase64, "Brand logo") : null;
 
     userId = sessionUser.id;
-    reservation = await reserveCredits(userId);
-    const { isElite, amount: numGenerations } = reservation;
 
-    const apiKey   = process.env.OPENAI_API_KEY;
+    // Reserve credits BEFORE any AI call — prevents concurrent bypass
+    reservation = await reserveCredits(userId);
+    const { isElite, numGenerations } = reservation;
+
+    const apiKey = process.env.OPENAI_API_KEY;
     const modelName = process.env.IMAGE_MODEL_NAME || "gpt-image-2";
 
-    /* ── Mock fallback ─────────────────────────────────────────── */
+    /* ── Mock fallback (no API key) — refund credits, no real work done ── */
     if (!apiKey) {
-      console.log("OpenAI key missing — returning mock image");
+      console.log("OpenAI key missing — returning mock image, refunding credits");
+      await refundCredits(userId, reservation);
+      reservation = null; // prevent double-refund in catch
       await new Promise(resolve => setTimeout(resolve, 2500));
       const mockUrls = [
         "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1792&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?q=80&w=1792&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1792&auto=format&fit=crop",
       ];
-      // For mock, return numGenerations mock images
-      let mockResults = Array.from({ length: numGenerations }).map(() => {
-        return mockUrls[Math.floor(Math.random() * mockUrls.length)];
-      });
-      mockResults = await saveImagesToStorageAndDB(mockResults, userId);
+      const mockResults = Array.from({ length: numGenerations }).map(() =>
+        mockUrls[Math.floor(Math.random() * mockUrls.length)]
+      );
       return NextResponse.json({ success: true, imageUrls: mockResults, isMock: true });
     }
 
     let imageUrls = [];
 
-    // Helper to run generation once
     const generateVariant = async (index) => {
       let variantPrompt = imagePrompt;
       if (isElite && index > 0) {
-        // Add subtle variations for Elite A/B testing
         const variations = [
           "Variation B: Alter the text layout and graphic elements slightly. Use a cooler, high-contrast color palette. Adjust the subject's pose and camera angle slightly for a different emotional impact.",
           "Variation C: Keep the core concept, but use a bolder graphic design style with a warmer, intense color palette. Rearrange the text placement and background elements. The subject should have a slightly different dynamic pose."
@@ -105,25 +123,18 @@ export async function POST(request) {
       }
 
       if (subjectImage) {
-        /* ── PATH A: Subject photo → /v1/images/edits ──────────── */
         console.log(`Subject photo detected — using /v1/images/edits (Variant ${index})`);
-
         const formData = new FormData();
         formData.append("image", new Blob([subjectImage.buffer], { type: subjectImage.mimeType }), `subject.${subjectImage.extension}`);
-
         if (logoImage) {
           formData.append("image", new Blob([logoImage.buffer], { type: logoImage.mimeType }), `logo.${logoImage.extension}`);
         }
-
-        const editPrompt = `${variantPrompt}
-
-CRITICAL: Use the person from the provided reference photo as the subject. Preserve their face, skin tone, and likeness with absolute accuracy. Style them dramatically for a high-production YouTube thumbnail.`;
-
-        formData.append("prompt",   editPrompt);
-        formData.append("model",    modelName);
-        formData.append("size",     "1792x1024");
-        formData.append("quality",  "low");
-        formData.append("n",        "1");
+        const editPrompt = `${variantPrompt}\n\nCRITICAL: Use the person from the provided reference photo as the subject. Preserve their face, skin tone, and likeness with absolute accuracy. Style them dramatically for a high-production YouTube thumbnail.`;
+        formData.append("prompt", editPrompt);
+        formData.append("model", modelName);
+        formData.append("size", "1792x1024");
+        formData.append("quality", "low");
+        formData.append("n", "1");
 
         const response = await fetch("https://api.openai.com/v1/images/edits", {
           method: "POST",
@@ -144,17 +155,13 @@ CRITICAL: Use the person from the provided reference photo as the subject. Prese
             : await fetchAsBase64(item.url);
         }
       } else {
-        /* ── PATH B: No photo → /v1/images/generations ─────────── */
         console.log(`No subject photo — using /v1/images/generations (Variant ${index})`);
         return await generateFromText(apiKey, modelName, variantPrompt);
       }
     };
 
-    // Run generations
     const promises = Array.from({ length: numGenerations }).map((_, i) => generateVariant(i));
     imageUrls = await Promise.all(promises);
-
-    // Save images to private storage and database
     imageUrls = await saveImagesToStorageAndDB(imageUrls, userId);
 
     return NextResponse.json({ success: true, imageUrls });
@@ -167,11 +174,9 @@ CRITICAL: Use the person from the provided reference photo as the subject. Prese
   }
 }
 
-/* ── Save images to Supabase & DB helper ────────────────────────────── */
 async function saveImagesToStorageAndDB(urls, userId) {
   if (!urls || urls.length === 0) return urls;
   const savedUrls = [];
-
   for (let i = 0; i < urls.length; i++) {
     const b64Data = urls[i];
     if (b64Data.startsWith("data:")) {
@@ -181,9 +186,7 @@ async function saveImagesToStorageAndDB(urls, userId) {
       await prisma.userImage.create({ data: { userId, filename: storagePath.split("/").at(-1), url: storagePath } });
       savedUrls.push(await getSignedImageUrl(storagePath));
     } else if (b64Data.startsWith("http")) {
-      await prisma.userImage.create({
-        data: { userId, filename: `remote_${Date.now()}_${i}.jpg`, url: b64Data }
-      });
+      await prisma.userImage.create({ data: { userId, filename: `remote_${Date.now()}_${i}.jpg`, url: b64Data } });
       savedUrls.push(b64Data);
     } else {
       savedUrls.push(b64Data);
@@ -192,37 +195,27 @@ async function saveImagesToStorageAndDB(urls, userId) {
   return savedUrls;
 }
 
-/* ── Text-to-image ───────────────────────────────────────────────── */
 async function generateFromText(apiKey, modelName, imagePrompt) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model:   modelName,
-      prompt:  imagePrompt,
-      n:       1,
-      size:    "1792x1024",
-      quality: "low",
-    }),
+    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1792x1024", quality: "low" }),
   });
-
   if (!response.ok) {
     const errText = await response.text();
     throw new Error(`OpenAI API failed ${response.status}: ${errText}`);
   }
-
   const data = await response.json();
   const item = data.data[0];
   if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
-  if (item.url)      return await fetchAsBase64(item.url);
+  if (item.url) return await fetchAsBase64(item.url);
   throw new Error("No image data returned from OpenAI.");
 }
 
-/* ── Fetch remote URL → base64 data URI ─────────────────────────── */
 async function fetchAsBase64(url) {
-  const res      = await fetch(url);
-  const buffer   = await res.arrayBuffer();
-  const b64      = Buffer.from(buffer).toString("base64");
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  const b64 = Buffer.from(buffer).toString("base64");
   const mimeType = res.headers.get("content-type") || "image/png";
   return `data:${mimeType};base64,${b64}`;
 }

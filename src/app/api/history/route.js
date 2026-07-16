@@ -20,6 +20,6 @@ export async function GET() {
     return NextResponse.json({ success: true, images: await withSignedImageUrls(images) });
   } catch (error) {
     console.error("History Route Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Failed to load history." }, { status: 500 });
   }
 }

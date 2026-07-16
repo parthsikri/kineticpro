@@ -143,11 +143,10 @@ export default function ThumbnailForm({ onSubmit, loading }) {
             onDragOver={e => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
-            onClick={() => photos.length < 3 && fileRef.current?.click()}
             className={`relative border-2 border-dashed rounded-xl transition-all duration-300 min-h-[172px] flex flex-col items-center justify-center overflow-hidden p-4
               ${dragging ? "border-gold bg-gold/5 cursor-copy"
                 : photos.length >= 3 ? "border-border cursor-default"
-                : "border-border hover:border-gold/50 cursor-pointer"}`}
+                : "border-border hover:border-gold/50"}`}
           >
             {photos.length > 0 ? (
               <div className="w-full space-y-4">
@@ -197,14 +196,14 @@ export default function ThumbnailForm({ onSubmit, loading }) {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10 cursor-pointer" onClick={() => setShowAssetModal(true)}>
+              <div className="text-center p-10 cursor-pointer" onClick={e => { e.stopPropagation(); setShowAssetModal(true); }}>
                 <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-charcoal border border-border flex items-center justify-center">
                   <Upload className="w-6 h-6 text-muted" />
                 </div>
                 <p className="text-sm font-semibold text-off-white">Click to Select or Upload Photos</p>
                 <p className="text-xs text-muted mt-1.5">JPG PNG (Up to 3 people)</p>
                 <p className="text-[10px] text-gold/80 mt-3 font-medium">
-                  ✓ Saved to your library for reuse
+                  ✓ Upload via the library to save for reuse
                 </p>
               </div>
             )}

@@ -65,12 +65,14 @@ const compositePhotos = async (photosArray) => {
   if (!photosArray || photosArray.length === 0) return null;
   if (photosArray.length === 1) return photosArray[0];
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const images = [];
     let loaded = 0;
+    let failed = false;
     photosArray.forEach(b64 => {
       const img = new Image();
       img.onload = () => {
+        if (failed) return;
         loaded++;
         if (loaded === photosArray.length) {
           const maxHeight = 1024;
@@ -91,6 +93,12 @@ const compositePhotos = async (photosArray) => {
             currentX += width;
           });
           resolve(canvas.toDataURL("image/png"));
+        }
+      };
+      img.onerror = () => {
+        if (!failed) {
+          failed = true;
+          reject(new Error("One or more subject photos could not be loaded."));
         }
       };
       img.src = b64;

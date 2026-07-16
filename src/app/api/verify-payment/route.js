@@ -49,6 +49,8 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: "Payment details could not be verified" }, { status: 400 });
     }
 
+    const subscriptionExpiresAt = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000);
+
     await prisma.$transaction([
       prisma.paymentOrder.update({
         where: { id: order.id },
@@ -56,7 +58,7 @@ export async function POST(request) {
       }),
       prisma.user.update({
         where: { id: user.id },
-        data: { subscriptionStatus: "active", subscriptionTier: order.tier },
+        data: { subscriptionStatus: "active", subscriptionTier: order.tier, subscriptionExpiresAt },
       }),
     ]);
 

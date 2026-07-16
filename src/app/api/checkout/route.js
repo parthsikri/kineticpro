@@ -3,11 +3,7 @@ import { razorpay } from "../../../lib/razorpay";
 import { prisma } from "../../../lib/prisma";
 import { getSessionUser } from "../../../lib/auth";
 import { checkRateLimit } from "../../../lib/rate-limit";
-
-const PLANS = {
-  pro: { amount: 29900, currency: "INR" },
-  elite: { amount: 99900, currency: "INR" },
-};
+import { PLANS } from "../../../lib/plans";
 
 export async function POST(request) {
   try {
@@ -29,14 +25,11 @@ export async function POST(request) {
       amount: plan.amount,
       currency: plan.currency,
       receipt: "rcpt_" + user.id.slice(0, 10) + "_" + Date.now(),
-      notes: {
-        tier,
-        userId: user.id,
-      }
+      notes: { tier, userId: user.id },
     };
 
     const order = await razorpay.orders.create(options);
-    
+
     await prisma.paymentOrder.create({
       data: {
         userId: user.id,

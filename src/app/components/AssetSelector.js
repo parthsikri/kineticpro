@@ -32,36 +32,42 @@ export default function AssetSelector({ onSelect, selectedBase64 }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      setUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = async () => {
+    setUploading(true);
+    const reader = new FileReader();
+
+    reader.onerror = () => {
+      console.error("FileReader error");
+      setUploading(false);
+    };
+
+    reader.onloadend = async () => {
+      try {
         const base64Data = reader.result;
-        
+
         // 1. Instantly select for the form
         onSelect(base64Data);
 
-        // 2. Upload to server
+        // 2. Upload to server (uploading stays true until this completes)
         const res = await fetch("/api/assets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            imageBase64: base64Data,
-            filename: file.name
-          }),
+          body: JSON.stringify({ imageBase64: base64Data, filename: file.name }),
         });
-        
+
         const data = await res.json();
         if (data.success) {
           setImages(prev => [data.image, ...prev]);
+        } else {
+          console.error("Upload failed:", data.error);
         }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Upload error", error);
-    } finally {
-      setUploading(false);
-    }
+      } catch (error) {
+        console.error("Upload error", error);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSelectImage = async (url) => {
