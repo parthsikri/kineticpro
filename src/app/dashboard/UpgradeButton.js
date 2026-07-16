@@ -26,7 +26,7 @@ export default function UpgradeButton({ className = "", tier = "pro", children }
 
       // 2. Open Razorpay Checkout Modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: data.order.key_id,
         amount: data.order.amount,
         currency: data.order.currency,
         name: tier === "elite" ? "Kinetic Elite" : "Kinetic Pro",

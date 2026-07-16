@@ -39,7 +39,7 @@ export async function POST(request) {
         currency: plan.currency,
       },
     });
-    return NextResponse.json({ success: true, order: { id: order.id, amount: plan.amount, currency: plan.currency } });
+    return NextResponse.json({ success: true, order: { id: order.id, amount: plan.amount, currency: plan.currency, key_id: process.env.RAZORPAY_KEY_ID } });
   } catch (error) {
     console.error("[RAZORPAY_CREATE_ORDER]", error);
     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
