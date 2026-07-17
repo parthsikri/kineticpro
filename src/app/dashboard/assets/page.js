@@ -4,6 +4,7 @@ import { getSessionUser } from "../../../lib/auth";
 import { redirect } from "next/navigation";
 import { Image as ImageIcon } from "lucide-react";
 import { withSignedImageUrls } from "../../../lib/storage";
+import DownloadButton from "../../components/DownloadButton";
 
 export default async function AssetsPage() {
   const user = await getSessionUser();
@@ -33,9 +34,14 @@ export default async function AssetsPage() {
             <div key={img.id} className="aspect-square rounded-xl overflow-hidden border border-border bg-charcoal group relative shadow-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url} alt={img.filename} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-                <p className="text-[10px] text-white truncate font-medium">{img.filename}</p>
-                <p className="text-[9px] text-muted">{new Date(img.createdAt).toLocaleDateString()}</p>
+              <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                <div className="flex justify-end">
+                  <DownloadButton url={img.url} filename={img.filename} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-white truncate font-medium">{img.filename}</p>
+                  <p className="text-[9px] text-muted">{new Date(img.createdAt).toLocaleDateString()}</p>
+                </div>
               </div>
             </div>
           ))}
