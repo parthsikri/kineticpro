@@ -233,26 +233,25 @@ export async function POST(request) {
 function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, videoTopic }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
-  const dynamicPose = "pointing directly at the camera or at the text with one hand, confident and engaging expression, other hand on hip or relaxed at side";
+  const dynamicPose = "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression, other hand holding a relevant physical prop related to the video topic (e.g. an official notice document, a strategy notepad, a printed report, a certificate — whatever fits the topic)";
 
   const subjectNote = hasSubjectPhoto
     ? `SUBJECT — REAL PERSON (photo provided):\n` +
-      `Integrate the provided photo of the ${subjectCount > 1 ? subjectCount + " creators" : "creator"} into the scene. ` +
-      `Preserve their exact face, skin tone, hair, and identity with 100% accuracy — this is non-negotiable. ` +
+      `Integrate the provided photo of the ${subjectCount > 1 ? subjectCount + " people" : "person"} into the scene. ` +
+      `Preserve their exact face, skin tone, hair, and identity with 100% accuracy — non-negotiable. ` +
       (poseMode === "ai"
-        ? `Apply the following pose/expression to them: "${dynamicPose}". ` +
-          `Re-render their body dynamically while keeping the face a perfect likeness. ` +
-          `Apply cinematic rim lighting using ${brandColor} as the key color — strong backlight halo, studio-grade. ` +
-          `Their clothing should look sharp and professional. Place them against the composite background seamlessly.`
-        : `Keep their exact pose from the reference photo. ` +
-          `Replace the background with the designed scene. Dramatically enhance lighting, add depth-of-field, ` +
-          `cinematic colour grading with ${brandColor} tones. Make them look like they're in a high-production set.`)
+        ? `Pose them as follows: ${dynamicPose}. ` +
+          `Apply cinematic rim/backlight using ${brandColor}. Clothing sharp and professional.`
+        : `Keep their exact pose from the reference photo. Replace background with the designed scene. Enhance lighting with ${brandColor} rim light.`)
     : `SUBJECT — AI-GENERATED PRESENTER:\n` +
-      `Create a confident, expressive South Asian/Indian male or female educator in their late 20s to mid-30s. ` +
-      `Pose: "${dynamicPose}". ` +
-      `Clothing: smart-casual — collared shirt or branded hoodie, clean and professional. ` +
-      `Lighting: powerful three-point studio lighting with ${brandColor} as the rim/backlight color. ` +
-      `Expression must be highly readable at thumbnail size — exaggerated but authentic.`;
+      `Create a confident, expressive South Asian/Indian educator (male or female, late 20s–mid 30s). ` +
+      `Pose: ${dynamicPose}. ` +
+      `Smart-casual clothing — collared shirt or branded hoodie. ` +
+      `Powerful studio lighting with ${brandColor} as the rim/backlight. Expression highly readable at thumbnail size.`;
+
+  const bgContext = videoTopic
+    ? `Add relevant real-world background context that matches the topic — for example: blurred storefront, campus building, office environment, stage, or landmark that fits the subject matter. Dark and moody with depth of field.`
+    : `Dark cinematic studio environment. Depth of field. Premium feel.`;
 
   const textElements = [];
 
@@ -340,7 +339,7 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSub
     subjectNote,
     "",
     "BACKGROUND:",
-    `Cinematic, dramatic environment. ${brandColor} is the dominant atmospheric color — rim lighting on the subject, ambient glow, color accent in background. Dark and moody with depth of field. Add relevant real-world background context (e.g. blurred classroom, office, stage) that matches the video topic.`,
+    `Cinematic, dramatic environment. ${brandColor} is the dominant atmospheric color — rim lighting on the subject, ambient glow, color accent in background. ${bgContext}`,
     "",
     "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):",
     textSection,
