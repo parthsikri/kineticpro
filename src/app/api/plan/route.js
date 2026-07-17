@@ -233,7 +233,7 @@ export async function POST(request) {
 function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, videoTopic }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
-  const dynamicPose = plan.subjectPose || "pointing upward confidently or open-mouth shock";
+  const dynamicPose = "pointing directly at the camera or at the text with one hand, confident and engaging expression, other hand on hip or relaxed at side";
 
   const subjectNote = hasSubjectPhoto
     ? `SUBJECT — REAL PERSON (photo provided):\n` +
