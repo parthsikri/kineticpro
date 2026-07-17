@@ -230,28 +230,17 @@ export async function POST(request) {
    ALL text, badges, banners, overlays are specified here so they
    get BAKED INTO the generated image — nothing added in the browser.
    ══════════════════════════════════════════════════════════════════ */
-function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, videoTopic }) {
+function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
   const dynamicPose = "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression, other hand holding a relevant physical prop related to the video topic (e.g. an official notice document, a strategy notepad, a printed report, a certificate — whatever fits the topic)";
 
   const subjectNote = hasSubjectPhoto
-    ? `SUBJECT — REAL PERSON (photo provided):\n` +
-      `Integrate the provided photo of the ${subjectCount > 1 ? subjectCount + " people" : "person"} into the scene. ` +
-      `Preserve their exact face, skin tone, hair, and identity with 100% accuracy — non-negotiable. ` +
+    ? `SUBJECT PHOTO(S) PROVIDED: Use the exact face, skin tone, and likeness for the ${subjectCount} person/people provided — preserve their identity completely. ` +
       (poseMode === "ai"
-        ? `Pose them as follows: ${dynamicPose}. ` +
-          `Apply cinematic rim/backlight using ${brandColor}. Clothing sharp and professional.`
-        : `Keep their exact pose from the reference photo. Replace background with the designed scene. Enhance lighting with ${brandColor} rim light.`)
-    : `SUBJECT — AI-GENERATED PRESENTER:\n` +
-      `Create a confident, expressive South Asian/Indian educator (male or female, late 20s–mid 30s). ` +
-      `Pose: ${dynamicPose}. ` +
-      `Smart-casual clothing — collared shirt or branded hoodie. ` +
-      `Powerful studio lighting with ${brandColor} as the rim/backlight. Expression highly readable at thumbnail size.`;
-
-  const bgContext = videoTopic
-    ? `Add relevant real-world background context that matches the topic — for example: blurred storefront, campus building, office environment, stage, or landmark that fits the subject matter. Dark and moody with depth of field.`
-    : `Dark cinematic studio environment. Depth of field. Premium feel.`;
+        ? `Give them the most expressive, dynamic pose based on this instruction: "${dynamicPose}". Dramatic cinematic rim lighting in the brand color.`
+        : "Keep their exact pose from the reference photo(s). Dramatically enhance the lighting, styling, and background.")
+    : `SUBJECT: Create a confident, expressive Indian educator/presenter. Pose instruction: "${dynamicPose}". Professional look, dramatic lighting.`;
 
   const textElements = [];
 
@@ -260,102 +249,105 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSub
       const [p1, p2] = oc.topBadge.split("|").map(s => s.trim());
       textElements.push(
         "TOP-LEFT CORNER — Two pill-shaped label badges side by side:\n" +
-        `  Badge 1: Bold white text "${p1}" on solid ${oc.topBadgeColor} background, tightly rounded corners, slight drop-shadow\n` +
-        `  Badge 2: Bold dark text "${p2}" on solid white background, tightly rounded corners`
+        "  Badge 1: Bold white text \"" + p1 + "\" on solid " + oc.topBadgeColor + " background, rounded corners\n" +
+        "  Badge 2: Bold black text \"" + p2 + "\" on solid white background, rounded corners"
       );
     } else {
       textElements.push(
-        `TOP-LEFT CORNER — Pill badge: Bold white text "${oc.topBadge}" on solid ${oc.topBadgeColor} background, rounded corners, slight drop-shadow`
+        "TOP-LEFT CORNER — Pill badge: Bold white text \"" + oc.topBadge + "\" on solid " + oc.topBadgeColor + " background, rounded corners"
       );
     }
   }
 
   if (oc.headline1 || oc.headline2) {
-    const h1 = oc.headline1 ? `"${oc.headline1.toUpperCase()}"` : null;
-    const h2 = oc.headline2 ? `"${oc.headline2.toUpperCase()}"` : null;
+    const h1 = oc.headline1 ? ("\"" + oc.headline1.toUpperCase() + "\"") : null;
+    const h2 = oc.headline2 ? ("\"" + oc.headline2.toUpperCase() + "\"") : null;
     textElements.push(
-      "MAIN HEADLINE — Positioned left-of-center, vertically centered in the frame:\n" +
-      (h1 ? `  Line 1: ${h1} — Ultra-massive Impact or Anton font, pure WHITE (#FFFFFF), enormous scale (fills ~30% frame height), heavy black outline stroke, dense drop-shadow for maximum legibility\n` : "") +
-      (h2 ? `  Line 2: ${h2} — Same enormous scale, BOLD ITALIC, solid ${accent} color fill, black outline stroke, drop-shadow\n` : "") +
-      "  Both lines strictly left-aligned. No letter-spacing. Tight leading. The text should feel like it's SHOUTING."
+      "MAIN HEADLINE — Left-center of frame, vertically centred, stacked:\n" +
+      (h1 ? ("  Line 1: " + h1 + " — massive Impact/heavy condensed font, pure WHITE, extremely large, strong text-shadow\n") : "") +
+      (h2 ? ("  Line 2: " + h2 + " — same massive size, ITALIC, color " + accent + " (bright yellow), strong text-shadow\n") : "") +
+      "  Both lines left-aligned"
     );
   }
 
   if (oc.showAlertCard && oc.alertTitle) {
     const alertBg = oc.alertType === "error" ? "#dc2626" : oc.alertType === "success" ? "#16a34a" : oc.alertType === "warning" ? "#d97706" : "#1d4ed8";
     textElements.push(
-      "TOP-RIGHT CORNER — Official government/university notice card (like a WhatsApp forwarded circular):\n" +
-      `  - Card background: white, slightly tilted 2–3° clockwise, subtle drop-shadow\n` +
-      `  - Top section: small grey text 'Examination Notice' with a university crest icon\n` +
-      `  - Coloured title bar (${alertBg}): bold white ALL-CAPS text "${oc.alertTitle}"\n` +
-      `  - Body text section: "${(oc.alertBody || "").slice(0, 100)}" in small dark grey text\n` +
-      `  - Bottom: an official-looking red stamp or seal overlay\n` +
-      `  Style: hyper-realistic printed document, not a digital card`
+      "TOP-RIGHT CORNER — Official-looking white notice card:\n" +
+      "  - Small grey header: \"Examination Notice\"\n" +
+      "  - Coloured title bar (" + alertBg + "): bold white text \"" + oc.alertTitle.toUpperCase() + "\"\n" +
+      "  - Body text: \"" + (oc.alertBody || "").slice(0, 100) + "\"\n" +
+      "  Style: like an official WhatsApp forwarded notice or university circular"
     );
   }
 
   if (oc.showDateCallout && oc.dateText) {
-    const iconMap = { cross: "bold red X mark", check: "bold green checkmark", fire: "fire emoji", warning: "yellow warning triangle" };
+    const iconMap = { cross: "bold red X", check: "green checkmark", fire: "fire emoji", warning: "warning symbol" };
     const iconDesc = iconMap[oc.dateIcon] || "warning symbol";
     textElements.push(
-      "CENTER-RIGHT AREA — Tear-off calendar widget:\n" +
-      `  - Bright red top strip (like a physical calendar header) with small white text 'EXAM DATE'\n` +
-      `  - Large bold date: "${oc.dateText.toUpperCase()}" — massive font, dark text on white\n` +
-      `  - Bottom-right corner of the calendar: a circular badge with a ${iconDesc}\n` +
-      `  - Slight drop-shadow, realistic paper texture on the calendar`
+      "CENTER AREA — Calendar-style white popup:\n" +
+      "  - Red top band (like a calendar header)\n" +
+      "  - Large bold date text: \"" + oc.dateText.toUpperCase() + "\"\n" +
+      "  - A circular " + iconDesc + " badge at bottom-right corner of the calendar"
     );
   }
 
   if (oc.bannerText) {
-    const upper = oc.bannerText.toUpperCase();
+    const upper      = oc.bannerText.toUpperCase();
     const accentWord = oc.bannerAccentWord ? oc.bannerAccentWord.toUpperCase() : null;
     const bannerDesc = accentWord
-      ? `"${upper}" — the word "${accentWord}" in bold ${accent} color, the rest in bold white`
-      : `"${upper}" in bold white`;
+      ? ("\"" + upper + "\" — the word \"" + accentWord + "\" in " + accent + " (bright yellow), the rest in white")
+      : ("\"" + upper + "\" in white");
     textElements.push(
-      "FULL-WIDTH BOTTOM BANNER (spans 100% of frame width, bottom 12–15% of image):\n" +
-      `  - Background: very dark navy or ${brandColor} at 95% opacity\n` +
-      `  - Top edge: a 3px solid ${accent} accent line (like a neon trim)\n` +
-      `  - Text: ${bannerDesc} — Impact/Anton font, ALL CAPS, very large, centered vertically in strip\n` +
-      (oc.dateIcon === "cross" ? `  - Left side of banner: a red circle with bold white X icon before the text\n` : "") +
-      `  The banner must feel like a TV news ticker — bold, urgent, undeniable`
+      "FULL-WIDTH BOTTOM BANNER STRIP (spans entire width):\n" +
+      "  - Solid dark background: " + brandColor + " or very dark navy\n" +
+      "  - A thin " + accent + " accent line at the top of the strip\n" +
+      "  - Impact/condensed bold font: " + bannerDesc + "\n" +
+      (oc.dateIcon === "cross" ? "  - A prominent red X circle icon on the left before the text\n" : "") +
+      "  Text centred vertically in the strip, large and readable"
     );
   }
 
   const textSection = textElements.length > 0
-    ? textElements.map((el, i) => `${i + 1}. ${el}`).join("\n\n")
-    : `Bold impactful 2-line headline on the left. Line 1: white Impact font. Line 2: ${accent} bold italic. Massive scale.`;
+    ? textElements.map((el, i) => ((i + 1) + ". " + el)).join("\n\n")
+    : "Bold impactful headline on the left side in white Impact font with accent-colored supporting text below";
 
-  return [
-    "Generate a COMPLETE, professional YouTube thumbnail image. Every element described below must appear in the final image — this is the finished, ready-to-upload thumbnail, not a background.",
-    "",
-    `REFERENCE STYLE: Top Indian YouTube education/news channels (Physics Wallah, Vedantu, Unacademy). Bold typography, dramatic backgrounds, expressive presenter, coloured text banners, official notice card overlays. Ultra high production value.`,
-    "",
-    "FORMAT: 16:9 landscape (1280x720)",
-    "",
-    "LAYOUT: Subject on the LEFT (40% of frame) with dramatic lighting. Text and overlays on the RIGHT and CENTER. Full-width banner at BOTTOM if specified. Alert card at TOP-RIGHT if specified.",
-    "",
-    "SUBJECT:",
-    subjectNote,
-    "",
-    "BACKGROUND:",
-    `Cinematic, dramatic environment. ${brandColor} is the dominant atmospheric color — rim lighting on the subject, ambient glow, color accent in background. ${bgContext}`,
-    "",
-    "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):",
-    textSection,
-    "",
-    "TYPOGRAPHY:",
-    "- Headlines: Impact or ultra-bold condensed sans-serif, ALL CAPS, very large, strong black outline + drop-shadow",
-    "- Badges/pills: Bold rounded sans-serif",
-    "- Banner: Impact/condensed, ALL CAPS",
-    "- All text 100% correctly spelled and legible",
-    "",
-    "ANATOMY: Subject must have exactly two natural arms. Hands perfectly formed, anatomically correct. No extra fingers or floating limbs.",
-    "",
-    `COLOR: Brand ${brandColor} dominant. Accent ${accent} for highlights. White (#FFFFFF) for headline line 1.`,
-    "",
-    "QUALITY: Photorealistic, ultra-sharp, magazine-cover grade. The thumbnail must look like it belongs on a channel with 5M+ subscribers.",
-  ].join("\n");
+  return (
+    "Generate a COMPLETE, professional YouTube thumbnail image. Every element described below must appear " +
+    "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
+    "REFERENCE STYLE: Top Indian YouTube education/news channels (Physics Wallah, Vedantu, Unacademy). " +
+    "Bold typography, dramatic backgrounds, expressive presenter, coloured text banners, official notice card overlays. " +
+    "Ultra high production value.\n\n" +
+    "FORMAT: 16:9 landscape (1280x720)\n\n" +
+    "LAYOUT ZONES:\n" +
+    "- LEFT 40% — Subject / Person (with dramatic lighting)\n" +
+    "- CENTER — Supporting graphic elements (date callout if any)\n" +
+    "- RIGHT area + OVERLAYS — Text elements\n\n" +
+    "SUBJECT:\n" + subjectNote + "\n\n" +
+    "BACKGROUND:\n" +
+    "Cinematic, dramatic environment. " + brandColor + " is the dominant atmospheric color — used as rim lighting " +
+    "on the subject, ambient glow, and color accent in the background. Dark and moody. Depth of field.\n\n" +
+    "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):\n" +
+    textSection + "\n\n" +
+    "TYPOGRAPHY RULES:\n" +
+    "- Headlines: Impact or ultra-bold condensed sans-serif, ALL CAPS, very large\n" +
+    "- Badges/pills: Bold rounded sans-serif\n" +
+    "- Banner: Impact/condensed, ALL CAPS\n" +
+    "- All text: 100% correctly spelled, sharp edges, strong drop-shadow for legibility\n\n" +
+    "ANATOMY RULES (CRITICAL):\n" +
+    "- The subject MUST have exactly two natural arms and hands.\n" +
+    "- Hands must be perfectly formed, anatomically correct, and attached naturally to the body.\n" +
+    "- STRICTLY NO extra floating hands, NO extra fingers, and NO distorted limbs. Keep hands out of the frame if they cannot be rendered perfectly.\n\n" +
+    "COLOR PALETTE:\n" +
+    "- Brand/dominant: " + brandColor + "\n" +
+    "- Accent/highlight: " + accent + "\n" +
+    "- Primary text: #FFFFFF (white)\n" +
+    "- Secondary text: " + accent + "\n\n" +
+    "QUALITY: Photorealistic, ultra-sharp, magazine-cover grade. " +
+    "The thumbnail must look like it belongs on a channel with 5M+ subscribers. " +
+    "Make it VISUALLY STUNNING — the kind of image that makes someone stop mid-scroll and immediately click."
+  );
+}
 }
 
 /* ── Smart fallback (no API key) ──────────────────────────────────── */
