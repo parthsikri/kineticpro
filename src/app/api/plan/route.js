@@ -53,8 +53,9 @@ export async function POST(request) {
         "Your task is to interview the creator to gather EVERY detail needed before designing.",
         "DO NOT assume or invent any text, dates, or concepts.",
         "You MUST ask exactly 3 to 4 specific questions based on their topic to gather all possible details (e.g., exact text for the thumbnail, specific dates, visual metaphors, preferred layout, or tone).",
+        "For each question, provide 3 to 4 likely multiple-choice options for the creator to choose from. One option should always be 'Other (please specify)'.",
         "Respond ONLY with valid raw JSON in the following format:",
-        '{ "needsMoreInfo": true, "questions": ["Question 1?", "Question 2?", "Question 3?"] }',
+        '{ "needsMoreInfo": true, "questions": [ { "question": "Question 1?", "options": ["Option 1", "Option 2", "Other (please specify)"] } ] }',
       ].join("\n");
 
       userPrompt = `VIDEO TOPIC: "${videoTopic}"\n\nAnalyze the topic and generate the mandatory clarification questions now.`;
@@ -325,9 +326,18 @@ function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectP
     return {
       needsMoreInfo: true,
       questions: [
-        "What is the exact text you want on the thumbnail?",
-        "Are there any specific dates or numbers to include?",
-        "What emotion should the thumbnail convey?"
+        {
+          question: "What is the exact text you want on the thumbnail?",
+          options: ["Let AI decide", "Keep it minimal", "Match the video title", "Other (please specify)"]
+        },
+        {
+          question: "Are there any specific dates or numbers to include?",
+          options: ["No dates", "Today's date", "Tomorrow", "Other (please specify)"]
+        },
+        {
+          question: "What emotion should the thumbnail convey?",
+          options: ["Shock / Surprise", "Serious / Urgent", "Happy / Celebratory", "Other (please specify)"]
+        }
       ]
     };
   }

@@ -16,12 +16,26 @@ export default function ClarifyStep({ questions, onSubmit, onBack, loading }) {
     e.preventDefault();
     // Combine Q&A into a supplemental context string
     const context = questions
-      .map((q, i) => `${q} → ${answers[i] || "(not provided)"}`)
+      .map((qItem, i) => {
+        const questionText = typeof qItem === 'object' ? qItem.question : qItem;
+        let finalAnswer = answers[i] || "(not provided)";
+        if (finalAnswer === "Other (please specify)" && answers[`${i}_other`]) {
+          finalAnswer = answers[`${i}_other`];
+        }
+        return `${questionText} → ${finalAnswer}`;
+      })
       .join("\n");
     onSubmit(context);
   };
 
-  const allAnswered = questions.every((_, i) => answers[i]?.trim());
+  const allAnswered = questions.every((qItem, i) => {
+    const val = answers[i];
+    if (!val || !val.trim()) return false;
+    if (val === "Other (please specify)") {
+      return !!(answers[`${i}_other`] && answers[`${i}_other`].trim());
+    }
+    return true;
+  });
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto animate-fadeIn">
@@ -47,25 +61,61 @@ export default function ClarifyStep({ questions, onSubmit, onBack, loading }) {
 
         {/* Questions */}
         <div className="space-y-5">
-          {questions.map((question, i) => (
-            <div key={i} className="space-y-2">
-              <label className="premium-label flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-gold/20 text-gold text-[10px] font-black flex items-center justify-center flex-shrink-0">
-                  {i + 1}
-                </span>
-                {question}
-              </label>
-              <input
-                type="text"
-                required
-                value={answers[i]}
-                onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
-                placeholder="Type your answer…"
-                className="premium-input"
-                autoFocus={i === 0}
-              />
-            </div>
-          ))}
+          {questions.map((qItem, i) => {
+            const isObj = typeof qItem === 'object' && qItem !== null;
+            const questionText = isObj ? qItem.question : qItem;
+            const options = isObj ? qItem.options : null;
+            
+            return (
+              <div key={i} className="space-y-2">
+                <label className="premium-label flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-gold/20 text-gold text-[10px] font-black flex items-center justify-center flex-shrink-0">
+                    {i + 1}
+                  </span>
+                  {questionText}
+                </label>
+                
+                {options && options.length > 0 ? (
+                  <div className="flex flex-col gap-2 mt-2">
+                    {options.map((opt, j) => (
+                      <label key={j} className="flex items-center gap-3 cursor-pointer group p-3 rounded-lg border border-white/10 bg-black/20 hover:bg-white/5 hover:border-gold/30 transition-all">
+                        <input
+                          type="radio"
+                          name={`question-${i}`}
+                          value={opt}
+                          checked={answers[i] === opt}
+                          onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                          className="accent-gold w-4 h-4"
+                        />
+                        <span className="text-sm text-off-white group-hover:text-gold transition-colors">{opt}</span>
+                      </label>
+                    ))}
+                    {answers[i] === "Other (please specify)" && (
+                      <input
+                        type="text"
+                        required
+                        value={answers[`${i}_other`] || ""}
+                        onChange={e => setAnswers(prev => ({ ...prev, [`${i}_other`]: e.target.value }))}
+                        placeholder="Type your custom answer…"
+                        className="premium-input mt-2"
+                        autoFocus
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={answers[i]}
+                    onChange={e => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+                    placeholder="Type your answer…"
+                    className="premium-input"
+                    autoFocus={i === 0}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Footer */}
