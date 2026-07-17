@@ -50,10 +50,10 @@ export async function POST(request) {
       // Mandatory First Pass: Ask Questions
       systemPrompt = [
         "You are an elite YouTube thumbnail strategist.",
-        "Your task is to interview the creator to gather EVERY detail needed before designing.",
-        "DO NOT assume or invent any text, dates, or concepts.",
-        "You MUST ask exactly 3 to 4 specific questions based on their topic to gather all possible details (e.g., exact text for the thumbnail, specific dates, visual metaphors, preferred layout, or tone).",
-        "For each question, provide 3 to 4 likely multiple-choice options for the creator to choose from. One option should always be 'Other (please specify)'.",
+        "Your task is to review the creator's video topic and ask ONLY for missing critical facts that you cannot invent.",
+        "DO NOT ask about design choices, layout, visual metaphors, or emotions — YOU will decide all of those.",
+        "You MUST ask exactly 1 to 2 specific questions about hard facts that might be missing (e.g., exact exam dates, specific course names, or exact text to highlight). If nothing is obviously missing, just ask for the exact text they want as the headline.",
+        "For each question, provide 2 to 3 likely multiple-choice options for the creator to choose from. One option should always be 'Other (please specify)'.",
         "Respond ONLY with valid raw JSON in the following format:",
         '{ "needsMoreInfo": true, "questions": [ { "question": "Question 1?", "options": ["Option 1", "Option 2", "Other (please specify)"] } ] }',
       ].join("\n");
@@ -291,16 +291,12 @@ function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectP
       needsMoreInfo: true,
       questions: [
         {
-          question: "What is the exact text you want on the thumbnail?",
-          options: ["Let AI decide", "Keep it minimal", "Match the video title", "Other (please specify)"]
-        },
-        {
-          question: "Are there any specific dates or numbers to include?",
+          question: "Are there any specific dates or numbers to include in the design?",
           options: ["No dates", "Today's date", "Tomorrow", "Other (please specify)"]
         },
         {
-          question: "What specific subject pose or emotion would you prefer?",
-          options: ["Let AI decide", "Looking shocked", "Looking happy/victorious", "Other (please specify)"]
+          question: "What is the exact short text/headline you want to highlight?",
+          options: ["Let AI decide", "Keep it minimal", "Match the video title", "Other (please specify)"]
         }
       ]
     };
