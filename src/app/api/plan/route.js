@@ -345,63 +345,38 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSub
 
   const textSection = textElements.length > 0
     ? textElements.map((el, i) => `${i + 1}. ${el}`).join("\n\n")
-    : `Bold impactful 2-line headline centered-left in the frame. Line 1: white Impact font. Line 2: ${accent} bold italic. Massive scale.`;
+    : `Bold impactful 2-line headline on the left. Line 1: white Impact font. Line 2: ${accent} bold italic. Massive scale.`;
 
-  return (
-    `Generate a COMPLETE, ultra-high-production YouTube thumbnail. ` +
-    `This is the FINAL, ready-to-upload image — every text element, overlay, badge, and graphic listed below MUST appear exactly as described. Do not omit any element.\n\n` +
-
-    `REFERENCE AESTHETIC: Top-tier Indian YouTube education channels — Physics Wallah, Vedantu, Unacademy, Adda247. ` +
-    `Think: dramatic, high-contrast, emotion-driven, information-dense. ` +
-    `The kind of thumbnail that gets 5M+ views in 24 hours.\n\n` +
-
-    `FORMAT: 16:9 landscape, 1280×720px equivalent\n\n` +
-
-    `COMPOSITION — THREE-ZONE LAYOUT:\n` +
-    `  LEFT 35–45%  → Subject/presenter with dramatic lighting and expressive pose\n` +
-    `  CENTER 20%   → Supporting graphic (calendar callout, alert card edge, or empty atmospheric space)\n` +
-    `  RIGHT 40–50% → Headline text, badge, overlays\n` +
-    `  BOTTOM STRIP → Full-width banner (if specified)\n` +
-    `  TOP-RIGHT    → Alert/notice card (if specified)\n\n` +
-
-    `SUBJECT:\n${subjectNote}\n\n` +
-
-    `BACKGROUND & ATMOSPHERE:\n` +
-    `  Create a deep, cinematic background environment. Use ${brandColor} as the dominant atmospheric tone — ` +
-    `applied as volumetric light rays, gradient fog, or environmental glow emanating from behind the subject. ` +
-    `Dark and moody with strong depth-of-field blur on background elements. ` +
-    `Add subtle texture — could be a dark studio, abstract geometric shapes, a blurred classroom or stage. ` +
-    `The background must feel premium, not flat.\n\n` +
-
-    `TEXT & OVERLAY ELEMENTS — RENDER ALL OF THESE EXACTLY:\n${textSection}\n\n` +
-
-    `TYPOGRAPHY MASTER RULES:\n` +
-    `  - All text must be 100% legible at 320×180px (thumbnail preview size)\n` +
-    `  - Headlines: Impact, Anton, or equivalent ultra-bold condensed sans-serif — ALL CAPS only\n` +
-    `  - Every text element: strong black outline stroke (2–4px) + hard drop-shadow for legibility on any background\n` +
-    `  - Badges/pills: rounded rectangle, bold sans-serif, tight padding\n` +
-    `  - Banner text: Impact/Anton, ALL CAPS, maximum size that fits the strip\n` +
-    `  - Zero spelling errors. Render each word with pixel-perfect sharpness.\n\n` +
-
-    `HUMAN ANATOMY RULES (CRITICAL — no exceptions):\n` +
-    `  - Subject must have EXACTLY two arms and two hands — no more, no less\n` +
-    `  - Each hand: exactly five fingers, naturally proportioned, anatomically correct\n` +
-    `  - No floating limbs, no extra fingers, no distorted joints\n` +
-    `  - If hands cannot be rendered perfectly at this angle, crop them out of frame — never show broken anatomy\n\n` +
-
-    `COLOR SYSTEM:\n` +
-    `  Primary brand color: ${brandColor} (dominant — backgrounds, lighting, badges)\n` +
-    `  Accent/highlight: ${accent} (pops — headline line 2, banner accent word, accent lines)\n` +
-    `  Headline color: #FFFFFF white (line 1 always white)\n` +
-    `  Never use flat, unshadowed colors — everything must have depth and luminosity\n\n` +
-
-    `FINAL QUALITY BAR:\n` +
-    `  Photorealistic. Cinema-grade colour grading. Ultra-sharp at every pixel. ` +
-    `This thumbnail must look like it was produced by a full-time professional design team. ` +
-    `If someone scrolled past it at 200px wide, they should feel compelled to stop and click. ` +
-    `Absolutely zero AI artifacts, blurry text, or muddy colors. ` +
-    `Render it like your reputation depends on it.`
-  );
+  return [
+    "Generate a COMPLETE, professional YouTube thumbnail image. Every element described below must appear in the final image — this is the finished, ready-to-upload thumbnail, not a background.",
+    "",
+    `REFERENCE STYLE: Top Indian YouTube education/news channels (Physics Wallah, Vedantu, Unacademy). Bold typography, dramatic backgrounds, expressive presenter, coloured text banners, official notice card overlays. Ultra high production value.`,
+    "",
+    "FORMAT: 16:9 landscape (1280x720)",
+    "",
+    "LAYOUT: Subject on the LEFT (40% of frame) with dramatic lighting. Text and overlays on the RIGHT and CENTER. Full-width banner at BOTTOM if specified. Alert card at TOP-RIGHT if specified.",
+    "",
+    "SUBJECT:",
+    subjectNote,
+    "",
+    "BACKGROUND:",
+    `Cinematic, dramatic environment. ${brandColor} is the dominant atmospheric color — rim lighting on the subject, ambient glow, color accent in background. Dark and moody with depth of field. Add relevant real-world background context (e.g. blurred classroom, office, stage) that matches the video topic.`,
+    "",
+    "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):",
+    textSection,
+    "",
+    "TYPOGRAPHY:",
+    "- Headlines: Impact or ultra-bold condensed sans-serif, ALL CAPS, very large, strong black outline + drop-shadow",
+    "- Badges/pills: Bold rounded sans-serif",
+    "- Banner: Impact/condensed, ALL CAPS",
+    "- All text 100% correctly spelled and legible",
+    "",
+    "ANATOMY: Subject must have exactly two natural arms. Hands perfectly formed, anatomically correct. No extra fingers or floating limbs.",
+    "",
+    `COLOR: Brand ${brandColor} dominant. Accent ${accent} for highlights. White (#FFFFFF) for headline line 1.`,
+    "",
+    "QUALITY: Photorealistic, ultra-sharp, magazine-cover grade. The thumbnail must look like it belongs on a channel with 5M+ subscribers.",
+  ].join("\n");
 }
 
 /* ── Smart fallback (no API key) ──────────────────────────────────── */
