@@ -8,6 +8,8 @@ import SidebarNav from "./components/SidebarNav";
 import DashboardLayoutClient from "./components/DashboardLayoutClient";
 import { PLANS } from "../../lib/plans";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({ children }) {
   const user = await getSessionUser();
 

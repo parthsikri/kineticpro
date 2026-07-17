@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ThumbnailForm from "../components/ThumbnailForm";
 import ClarifyStep   from "../components/ClarifyStep";
 import ImageResult   from "../components/ImageResult";
@@ -112,6 +113,7 @@ const compositePhotos = async (photosArray) => {
    Steps: INPUT -> GENERATING -> (optional) CLARIFY -> GENERATING -> RESULT
    ==================================================================== */
 export default function Home() {
+  const router = useRouter();
   const [step, setStep]               = useState("INPUT"); // INPUT | GENERATING | CLARIFY | RESULT
   const [formData, setFormData]       = useState(null);
   const [clarifyQuestions, setClarifyQuestions] = useState([]);
@@ -185,6 +187,7 @@ export default function Home() {
       const urls = await callGenerate(planData.plan, dataWithComposite);
       setImageUrls(urls);
       setStep("RESULT");
+      router.refresh();
 
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
@@ -222,6 +225,7 @@ export default function Home() {
       const urls = await callGenerate(planData.plan, dataWithComposite);
       setImageUrls(urls);
       setStep("RESULT");
+      router.refresh();
 
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
@@ -240,6 +244,7 @@ export default function Home() {
       const urls = await callGenerate(plan, formData);
       setImageUrls(urls);
       setStep("RESULT");
+      router.refresh();
     } catch (err) {
       setError(err.message);
       setStep("RESULT");

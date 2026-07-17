@@ -6,6 +6,8 @@ import { Image as ImageIcon } from "lucide-react";
 import { withSignedImageUrls } from "../../../lib/storage";
 import DownloadButton from "../../components/DownloadButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AssetsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");

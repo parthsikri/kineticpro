@@ -127,6 +127,7 @@ export default function AdminPage() {
         setMessage({ type: "success", text: `User ${data.user.email} updated successfully!` });
         // Update user in local state list
         setUsers(prev => prev.map(u => u.id === data.user.id ? { ...u, ...data.user } : u));
+        router.refresh();
         setTimeout(() => setEditingUser(null), 1000);
       } else {
         setMessage({ type: "error", text: data.error || "Failed to update user." });
