@@ -50,16 +50,22 @@ export async function POST(request) {
       // Mandatory First Pass: Ask Questions
       systemPrompt = [
         "You are the world's sharpest YouTube thumbnail strategist, specialising in Indian education channels.",
-        "A creator just told you their video topic. Your ONLY job right now is to identify the 1 or 2 hard facts that are MISSING — facts you cannot invent, like specific exam dates, university names, exact headline text, or roll numbers.",
-        "If all critical facts can be inferred from the topic, ask only ONE question: the exact short headline text they want on the thumbnail (max 3 words per line).",
-        "NEVER ask about design, colors, layout, style, emotion, or any creative choice. You decide all of that.",
-        "NEVER ask more than 2 questions total.",
-        "For each question, give 2–3 plausible preset options that match the topic context. Always include 'Other (please specify)' as the last option.",
-        "Respond ONLY with raw JSON — no markdown, no explanation:",
-        '{ "needsMoreInfo": true, "questions": [ { "question": "<question>", "options": ["<opt1>", "<opt2>", "Other (please specify)"] } ] }',
+        "A creator just described their video topic. Your ONLY job right now is to check if there are any EXTERNAL FACTS missing that you cannot possibly infer or invent — for example: a specific exam date, a university or board name, a course/subject code, or a specific person's name.",
+        "CRITICAL RULES:",
+        "- NEVER ask about what text or headline to use — YOU decide that based on the topic.",
+        "- NEVER ask what topic, concept, or subject to focus on — it's already in the video topic.",
+        "- NEVER ask about design, layout, style, emotions, colors, or any creative decision — YOU own all of that.",
+        "- ONLY ask if a concrete external fact is genuinely missing AND would materially change the design (e.g. an exam date that needs to appear as a date callout).",
+        "- If you can fully design the thumbnail from the given topic alone, return needsMoreInfo: false with 0 questions.",
+        "- Maximum 1 question. Never more.",
+        "If you do ask, provide 2–3 plausible preset options matching the context. Always include 'Other (please specify)' last.",
+        "Respond ONLY with raw JSON — no markdown:",
+        '{ "needsMoreInfo": true, "questions": [ { "question": "<specific factual question>", "options": ["<opt1>", "<opt2>", "Other (please specify)"] } ] }',
+        "OR if no facts are missing:",
+        '{ "needsMoreInfo": false }',
       ].join("\n");
 
-      userPrompt = `VIDEO TOPIC: "${videoTopic}"\n\nIdentify missing hard facts and generate 1–2 clarification questions now. Remember: design decisions are YOURS — only ask what you genuinely cannot infer.`;
+      userPrompt = `VIDEO TOPIC: "${videoTopic}"\n\nDecide: is there any specific external fact (date, board name, code, etc.) missing that would materially change the thumbnail design? If yes, ask 1 question. If no, return needsMoreInfo: false immediately.`;
     } else {
       systemPrompt = [
         "You are the world's #1 YouTube thumbnail strategist for Indian education and news channels.",
@@ -132,7 +138,7 @@ export async function POST(request) {
           { role: "system", content: systemPrompt },
           { role: "user",   content: userPrompt   },
         ],
-        temperature: 0.82,
+        temperature: isSecondPass ? 0.85 : 0.3,
         response_format: { type: "json_object" },
       }),
     });
@@ -143,11 +149,87 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    const plan = JSON.parse(data.choices[0].message.content);
+    let plan = JSON.parse(data.choices[0].message.content);
 
     // If DeepSeek needs more info from the user — return questions, don't generate yet
     if (plan.needsMoreInfo === true && Array.isArray(plan.questions) && plan.questions.length > 0) {
       return NextResponse.json({ success: true, needsMoreInfo: true, questions: plan.questions });
+    }
+
+    // First pass decided no clarification needed — immediately run second pass to build the full plan
+    if (!isSecondPass && plan.needsMoreInfo === false) {
+      const pass2System = [
+        "You are the world's #1 YouTube thumbnail strategist for Indian education and news channels.",
+        "You have deep knowledge of what makes students STOP SCROLLING and click — urgency, bold Hinglish, high-emotion faces, dramatic overlays.",
+        "",
+        "YOUR TASK: Analyse the topic and produce a complete, precise thumbnail plan. You own every creative decision.",
+        "",
+        "CHANNEL ARCHETYPES you must match:",
+        "- EXAM/ANNOUNCEMENT video → Alert card (official notice style) + Date callout + urgent red/orange banner + shocked subject",
+        "- RESULT video → Success/error card + celebratory or tense subject + date callout if relevant",
+        "- LECTURE/REVISION video → Punchy 2-line headline + badge with subject code + confident pointing subject. NO alert card.",
+        "- CRASH COURSE video → Bold 'FREE' or 'COMPLETE' badge + excited/energetic subject + bottom banner with course name",
+        "- MOTIVATIONAL/NEWS video → Impactful Hinglish headline + dramatic subject expression + bottom banner",
+        "",
+        "HEADLINE RULES:",
+        "- Max 3 words per line, ALL CAPS. Punchy, Hinglish if it fits, highly emotional.",
+        "- headline1 = power hook (e.g. EXAM, RESULT, BIGGEST, FREE)",
+        "- headline2 = payoff word (e.g. CANCELLED, OUT!, MISTAKE, DOBARA)",
+        "",
+        "SUBJECT POSE: Vivid, cinematic, movie-poster energy.",
+        "CRITICAL: DO NOT invent or hallucinate any fact, date, or name not in the topic.",
+        "Respond ONLY with raw JSON — no markdown, no code blocks.",
+      ].join("\n");
+
+      const pass2User = [
+        `VIDEO TOPIC: "${videoTopic}"`,
+        `BRAND COLOR: ${brandColor}`,
+        `HIGHLIGHT/ACCENT COLOR: ${highlightColor || "#f5d800"}`,
+        `SUBJECT: ${subjectInstruction}`,
+        "",
+        "Return the complete thumbnail plan as JSON:",
+        "{",
+        '  "needsMoreInfo": false,',
+        '  "conceptTitle": "4–6 word evocative thumbnail concept title",',
+        '  "ctrAnalysis": "2 sharp sentences on why this thumbnail will get a high CTR",',
+        '  "compositionStrategy": "1 sentence on the overall visual layout and energy",',
+        '  "subjectPose": "Vivid, specific, cinematic pose — exact expression, body language, hand position. Movie-poster energy.",',
+        '  "overlayConfig": {',
+        '    "accentColor": "use the exact HIGHLIGHT COLOR provided — do not change it",',
+        "    \"topBadge\": \"short pill label e.g. 'RGPV | MATHS-II' or null — only if it adds factual context\",",
+        '    "topBadgeColor": "hex for badge background (usually the brand color)",',
+        '    "headline1": "POWER HOOK — uppercase, max 3 words, white text",',
+        '    "headline2": "PAYOFF — uppercase, max 3 words, accent color — or null",',
+        '    "bannerText": "FULL-WIDTH BOTTOM BANNER — max 8 words, Hinglish OK — or null",',
+        '    "bannerAccentWord": "single word in accent color inside the banner — or null",',
+        '    "showAlertCard": "true ONLY for official announcements, postponements, or breaking news",',
+        '    "alertTitle": "short all-caps alert title — or null",',
+        '    "alertBody": "1–2 sentence factual body using ONLY topic-provided details — or null",',
+        '    "alertType": "error | success | info | warning",',
+        '    "showDateCallout": "true ONLY if a specific date is in the topic",',
+        '    "dateText": "e.g. 15 AUG — or null",',
+        '    "dateIcon": "cross | check | fire | warning — or null"',
+        "  }",
+        "}",
+      ].filter(Boolean).join("\n");
+
+      const pass2Res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}` },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: pass2System },
+            { role: "user",   content: pass2User   },
+          ],
+          temperature: 0.85,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!pass2Res.ok) throw new Error(`AI Engine pass 2 failed: ${pass2Res.status}`);
+      const pass2Data = await pass2Res.json();
+      plan = JSON.parse(pass2Data.choices[0].message.content);
     }
 
     // Build the COMPLETE thumbnail prompt — text fully included, nothing added in browser
