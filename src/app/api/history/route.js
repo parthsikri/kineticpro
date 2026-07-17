@@ -14,7 +14,8 @@ export async function GET() {
 
     const images = await prisma.userImage.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: 24,
     });
 
     return NextResponse.json({ success: true, images: await withSignedImageUrls(images) });

@@ -29,8 +29,34 @@ export function isPrivateStoragePath(value) {
 }
 
 export async function withSignedImageUrls(images) {
-  return Promise.all(images.map(async (image) => ({
-    ...image,
-    url: isPrivateStoragePath(image.url) ? await getSignedImageUrl(image.url) : image.url,
-  })));
+  if (!images || images.length === 0) return images;
+
+  // Split images into those needing signed URLs vs public/external URLs
+  const privatePaths = images
+    .map((img, i) => ({ index: i, path: img.url }))
+    .filter(({ path }) => isPrivateStoragePath(path));
+
+  if (privatePaths.length === 0) return images;
+
+  // Single batch request for all private paths
+  const { data, error } = await getStorageClient()
+    .storage
+    .from(BUCKET)
+    .createSignedUrls(privatePaths.map(p => p.path), 60 * 15);
+
+  if (error || !data) {
+    // Fallback: return images as-is rather than failing completely
+    console.error("Batch signed URL error:", error);
+    return images;
+  }
+
+  // Map signed URLs back to the correct image records
+  const result = [...images];
+  privatePaths.forEach(({ index }, i) => {
+    if (data[i]?.signedUrl) {
+      result[index] = { ...result[index], url: data[i].signedUrl };
+    }
+  });
+
+  return result;
 }
