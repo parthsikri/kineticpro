@@ -33,6 +33,9 @@ export async function POST(request) {
       "You are the world's #1 YouTube SEO strategist specializing in Indian education, news, tech, and entertainment channels.",
       "You have deep knowledge of YouTube's search algorithm, click-through rate optimization, and Hindi/English/Hinglish content strategy.",
       "Your job is to generate a COMPLETE, publish-ready YouTube SEO package for a long-format video.",
+      "IMPORTANT: The creator will describe what their video is ABOUT — they are NOT giving you the final title.",
+      "You must deeply understand the topic from their description and craft the most powerful, click-worthy, SEO-optimised titles yourself.",
+      "Think like a top Indian YouTuber — what title would make 1 million people stop scrolling and click?",
       "Every field must be optimized for maximum discoverability, watch time, and subscriber growth.",
       "Respond ONLY with valid raw JSON — no markdown, no code blocks, no explanation outside the JSON.",
     ].join("\n");
@@ -43,8 +46,9 @@ export async function POST(request) {
       : "Generate 7-9 logical chapters that make sense for this topic. Space them realistically (first at 0:00, rest 2-5 minutes apart).";
 
     const userPrompt = [
-      `VIDEO TOPIC: "${videoTopic.trim()}"`,
+      `VIDEO DESCRIPTION (what the video is about): "${videoTopic.trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
+      "NOTE: The creator described their video content — you must generate the best possible titles from this description, not just reword it.",
       `LANGUAGE: "${lang}"`,
       `CHAPTERS INSTRUCTION: ${chapterInstruction}`,
       "",
@@ -91,7 +95,7 @@ export async function POST(request) {
     ].join("\n");
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

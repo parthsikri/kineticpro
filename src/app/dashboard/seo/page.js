@@ -469,13 +469,13 @@ export default function SEOStudioPage() {
             <div className="space-y-2">
               <label className="premium-label flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5 text-gold" />
-                Video Topic / Title Idea
+                What is your video about?
               </label>
               <textarea
-                required rows={3}
+                required rows={4}
                 value={videoTopic}
                 onChange={e => setVideoTopic(e.target.value)}
-                placeholder="e.g. How to crack UPSC in 6 months — complete strategy for working professionals&#10;&#10;Be as descriptive as possible for best results."
+                placeholder="Describe your video content in detail — what topics are covered, what the viewer will learn, what problem it solves.&#10;&#10;e.g. My video explains how to crack UPSC exam while doing a 9-5 job. I cover daily study schedule, best books, answer writing tips, and motivation strategies for working professionals.&#10;&#10;AI will craft the best possible YouTube title, description, tags and more from your description."
                 className="premium-textarea resize-none text-base leading-relaxed"
               />
             </div>
