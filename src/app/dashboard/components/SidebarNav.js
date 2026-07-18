@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard, Shield } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard, Shield, Search } from "lucide-react";
 
 export default function SidebarNav({ isAdmin }) {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Generator", href: "/dashboard", icon: LayoutDashboard },
-    { name: "History", href: "/dashboard/history", icon: History },
-    { name: "My Assets", href: "/dashboard/assets", icon: ImageIcon },
-    { name: "Plans & Pricing", href: "/dashboard/pricing", icon: CreditCard },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Generator",    href: "/dashboard",         icon: LayoutDashboard },
+    { name: "History",      href: "/dashboard/history",  icon: History         },
+    { name: "SEO Studio",   href: "/dashboard/seo",      icon: Search          },
+    { name: "My Assets",    href: "/dashboard/assets",   icon: ImageIcon       },
+    { name: "Plans & Pricing", href: "/dashboard/pricing", icon: CreditCard   },
+    { name: "Settings",     href: "/dashboard/settings", icon: Settings        },
   ];
 
   if (isAdmin) {
