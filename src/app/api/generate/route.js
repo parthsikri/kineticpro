@@ -133,7 +133,7 @@ export async function POST(request) {
         formData.append("prompt", editPrompt);
         formData.append("model", modelName);
         formData.append("size", "1536x1024");
-        formData.append("quality", "medium");
+        formData.append("quality", "low");
         formData.append("n", "1");
 
         const response = await fetch("https://api.openai.com/v1/images/edits", {
@@ -219,7 +219,7 @@ async function generateFromText(apiKey, modelName, imagePrompt) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1536x1024", quality: "medium", output_format: "png" }),
+    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1536x1024", quality: "low", output_format: "png" }),
   });
   if (!response.ok) {
     const errText = await response.text();
