@@ -13,7 +13,7 @@ export default async function AssetsPage() {
   if (!user) redirect("/login");
 
   const imageRecords = await prisma.userImage.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, url: { startsWith: "assets/" } },
     orderBy: { createdAt: "desc" },
   });
   const images = await withSignedImageUrls(imageRecords);
