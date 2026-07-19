@@ -11,10 +11,36 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl, defaultLinks } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl } = body;
 
-    if (!videoTopic?.trim()) {
-      return NextResponse.json({ success: false, error: "Video topic is required." }, { status: 400 });
+    if (!videoTopic?.trim() && !videoUrl?.trim()) {
+      return NextResponse.json({ success: false, error: "Either video description or YouTube video URL is required." }, { status: 400 });
+    }
+
+    // Fetch YouTube Video Transcript if URL is provided
+    let transcriptText = "";
+    if (videoUrl?.trim()) {
+      try {
+        const transcript = await getYoutubeTranscriptInnerTube(videoUrl);
+        if (transcript) {
+          transcriptText = transcript.slice(0, 40000); // Limit to ~8,000 words
+        }
+      } catch (err) {
+        console.error("Failed to fetch transcript, continuing without it:", err);
+      }
+    }
+
+    let transcriptSection = "";
+    if (transcriptText) {
+      transcriptSection = [
+        "",
+        "VIDEO TRANSCRIPT (Parsed directly from the video):",
+        transcriptText,
+        "",
+        "INSTRUCTIONS FOR TRANSCRIPT:",
+        "- Analyze the video transcript above to understand the main topic, subtopics, and exact flow of information.",
+        "- Generate highly relevant, click-worthy titles, search-optimized description, tags, hashtags, and exact chapters based on this transcript.",
+      ].join("\n");
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -25,7 +51,7 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         isMock: true,
-        seo: buildMockSEO(videoTopic, language),
+        seo: buildMockSEO(videoTopic || "YouTube Video", language),
       });
     }
 
@@ -84,13 +110,14 @@ export async function POST(request) {
     }
 
     const userPrompt = [
-      `VIDEO DESCRIPTION (what the video is about): "${videoTopic.trim()}"`,
+      `VIDEO DESCRIPTION (what the video is about): "${(videoTopic || "").trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
       "NOTE: The creator described their video content — you must generate the best possible titles from this description, not just reword it.",
       `LANGUAGE: "${lang}"`,
       `CHAPTERS INSTRUCTION: ${chapterInstruction}`,
       videosSection,
       defaultLinksSection,
+      transcriptSection,
       "",
       "Generate a complete, maximum-impact YouTube SEO package. Return ONLY this exact JSON:",
       "{",
@@ -257,4 +284,93 @@ function buildMockSEO(topic, language) {
     competitionLevel: "Medium",
     estimatedMonthlySearches: "50K – 200K",
   };
+}
+
+async function getYoutubeTranscriptInnerTube(videoUrl) {
+  try {
+    let videoId = "";
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = videoUrl.match(regExp);
+    if (match && match[2].length === 11) {
+      videoId = match[2];
+    } else {
+      return null;
+    }
+
+    const response = await fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "com.google.android.youtube/20.10.38 (Linux; U; Android 14)"
+      },
+      body: JSON.stringify({
+        context: {
+          client: {
+            clientName: "ANDROID",
+            clientVersion: "20.10.38"
+          }
+        },
+        videoId: videoId
+      })
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const captionTracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
+    if (!Array.isArray(captionTracks) || captionTracks.length === 0) return null;
+
+    const track = captionTracks.find(t => t.languageCode === "en") || captionTracks.find(t => t.languageCode === "hi") || captionTracks[0];
+    const transcriptUrl = track.baseUrl;
+
+    const transcriptResponse = await fetch(transcriptUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36,gzip(gfe)"
+      }
+    });
+
+    if (!transcriptResponse.ok) return null;
+
+    const xml = await transcriptResponse.text();
+
+    const textMatches = xml.match(/<text[^>]*?>([\s\S]*?)<\/text>/g) || [];
+    if (textMatches.length === 0) {
+      const pMatches = xml.match(/<p[^>]*?>([\s\S]*?)<\/p>/g) || [];
+      const lines = pMatches.map(p => {
+        const sMatches = p.match(/<s[^>]*?>([^<]*?)<\/s>/g) || [];
+        if (sMatches.length > 0) {
+          return sMatches.map(s => s.replace(/<s[^>]*?>/, "").replace(/<\/s>/, "")).join("");
+        }
+        return p.replace(/<[^>]+>/g, "");
+      });
+      return lines.map(decodeEntities).join(" ");
+    }
+
+    const lines = textMatches.map(t => {
+      return t
+        .replace(/<text[^>]*?>/, "")
+        .replace(/<\/text>/, "")
+        .replace(/[\r\n]+/g, " ")
+        .trim();
+    });
+
+    return lines.map(decodeEntities).join(" ");
+
+  } catch (err) {
+    console.error("Error in getYoutubeTranscriptInnerTube:", err);
+    return null;
+  }
+}
+
+function decodeEntities(text) {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)));
 }

@@ -396,6 +396,7 @@ export default function SEOStudioPage() {
   const [outline,     setOutline]     = useState("");
   const [channelUrl,  setChannelUrl]  = useState("");
   const [defaultLinks, setDefaultLinks] = useState("");
+  const [videoUrl,    setVideoUrl]    = useState("");
 
   React.useEffect(() => {
     const savedChannel = localStorage.getItem("kinetic_seo_channel_url");
@@ -425,10 +426,10 @@ export default function SEOStudioPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!videoTopic.trim()) return;
+    if (!videoTopic.trim() && !videoUrl.trim()) return;
     localStorage.setItem("kinetic_seo_channel_url", channelUrl);
     localStorage.setItem("kinetic_seo_default_links", defaultLinks);
-    const data = { videoTopic, audience, language, outline, channelUrl, defaultLinks };
+    const data = { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl };
     setFormData(data);
     runGenerate(data);
   };
@@ -442,7 +443,7 @@ export default function SEOStudioPage() {
 
   const handleNew = () => {
     setSeoResult(null); setError(""); setStep("INPUT");
-    setVideoTopic(""); setAudience(""); setOutline("");
+    setVideoTopic(""); setAudience(""); setOutline(""); setVideoUrl("");
     // Keep inputs populated for convenience
   };
 
@@ -477,14 +478,38 @@ export default function SEOStudioPage() {
         <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto animate-fadeIn">
           <div className="premium-card space-y-6">
 
+            {/* YouTube Video Link (Optional / Auto-Transcript) */}
+            <div className="space-y-2">
+              <label className="premium-label flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-gold" />
+                YouTube Video Link (Optional)
+                <span className="ml-2 text-[10px] text-muted normal-case font-normal tracking-normal">
+                  Auto-transcribes to create context-perfect SEO matching your video
+                </span>
+              </label>
+              <input
+                type="url"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value)}
+                placeholder="e.g. https://www.youtube.com/watch?v=GhsgJD1KjWc"
+                className="premium-textarea py-2.5 text-sm"
+              />
+            </div>
+
+            <div className="flex items-center my-4">
+              <div className="flex-1 h-[1px] bg-white/5" />
+              <span className="px-4 text-[10px] text-muted uppercase tracking-widest font-semibold">OR</span>
+              <div className="flex-1 h-[1px] bg-white/5" />
+            </div>
+
             {/* video topic */}
             <div className="space-y-2">
               <label className="premium-label flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5 text-gold" />
-                What is your video about?
+                Describe what your video is about
               </label>
               <textarea
-                required rows={4}
+                rows={4}
                 value={videoTopic}
                 onChange={e => setVideoTopic(e.target.value)}
                 placeholder="Describe your video content in detail — what topics are covered, what the viewer will learn, what problem it solves.&#10;&#10;e.g. My video explains how to crack UPSC exam while doing a 9-5 job. I cover daily study schedule, best books, answer writing tips, and motivation strategies for working professionals.&#10;&#10;AI will craft the best possible YouTube title, description, tags and more from your description."
@@ -578,7 +603,7 @@ export default function SEOStudioPage() {
 
             <button
               type="submit"
-              disabled={!videoTopic.trim()}
+              disabled={!videoTopic.trim() && !videoUrl.trim()}
               className="premium-btn w-full py-4 text-sm tracking-[0.18em] relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
