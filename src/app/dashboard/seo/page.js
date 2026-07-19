@@ -397,6 +397,7 @@ export default function SEOStudioPage() {
   const [channelUrl,  setChannelUrl]  = useState("");
   const [defaultLinks, setDefaultLinks] = useState("");
   const [videoUrl,    setVideoUrl]    = useState("");
+  const [pastedTranscript, setPastedTranscript] = useState("");
 
   React.useEffect(() => {
     const savedChannel = localStorage.getItem("kinetic_seo_channel_url");
@@ -426,10 +427,10 @@ export default function SEOStudioPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!videoTopic.trim() && !videoUrl.trim()) return;
+    if (!videoTopic.trim() && !videoUrl.trim() && !pastedTranscript.trim()) return;
     localStorage.setItem("kinetic_seo_channel_url", channelUrl);
     localStorage.setItem("kinetic_seo_default_links", defaultLinks);
-    const data = { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl };
+    const data = { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl, pastedTranscript };
     setFormData(data);
     runGenerate(data);
   };
@@ -443,7 +444,7 @@ export default function SEOStudioPage() {
 
   const handleNew = () => {
     setSeoResult(null); setError(""); setStep("INPUT");
-    setVideoTopic(""); setAudience(""); setOutline(""); setVideoUrl("");
+    setVideoTopic(""); setAudience(""); setOutline(""); setVideoUrl(""); setPastedTranscript("");
     // Keep inputs populated for convenience
   };
 
@@ -493,6 +494,30 @@ export default function SEOStudioPage() {
                 onChange={e => setVideoUrl(e.target.value)}
                 placeholder="e.g. https://www.youtube.com/watch?v=GhsgJD1KjWc"
                 className="premium-textarea py-2.5 text-sm"
+              />
+            </div>
+
+            <div className="flex items-center my-4">
+              <div className="flex-1 h-[1px] bg-white/5" />
+              <span className="px-4 text-[10px] text-muted uppercase tracking-widest font-semibold">OR</span>
+              <div className="flex-1 h-[1px] bg-white/5" />
+            </div>
+
+            {/* Paste Video Transcript (Optional) */}
+            <div className="space-y-2">
+              <label className="premium-label flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-gold" />
+                Paste Video Transcript (Optional)
+                <span className="ml-2 text-[10px] text-muted normal-case font-normal tracking-normal">
+                  Guaranteed bypass if auto-fetch fails
+                </span>
+              </label>
+              <textarea
+                rows={4}
+                value={pastedTranscript}
+                onChange={e => setPastedTranscript(e.target.value)}
+                placeholder="Paste the video transcript here (you can copy it in 2 clicks from YouTube's 'Show transcript' box).&#10;&#10;If pasted, Gemini will use it to build context-perfect titles, descriptions, and chapters."
+                className="premium-textarea resize-none text-sm leading-relaxed"
               />
             </div>
 
@@ -603,7 +628,7 @@ export default function SEOStudioPage() {
 
             <button
               type="submit"
-              disabled={!videoTopic.trim() && !videoUrl.trim()}
+              disabled={!videoTopic.trim() && !videoUrl.trim() && !pastedTranscript.trim()}
               className="premium-btn w-full py-4 text-sm tracking-[0.18em] relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />

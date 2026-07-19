@@ -11,34 +11,34 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl, pastedTranscript } = body;
 
-    if (!videoTopic?.trim() && !videoUrl?.trim()) {
-      return NextResponse.json({ success: false, error: "Either video description or YouTube video URL is required." }, { status: 400 });
+    if (!videoTopic?.trim() && !videoUrl?.trim() && !pastedTranscript?.trim()) {
+      return NextResponse.json({ success: false, error: "Please provide either a video description, a YouTube URL, or a pasted transcript." }, { status: 400 });
     }
 
-    // Fetch YouTube Video Transcript if URL is provided
-    let transcriptText = "";
+    // Fetch or use pasted YouTube Video Transcript
+    let transcriptText = pastedTranscript?.trim() || "";
     let transcriptFetchError = "";
-    if (videoUrl?.trim()) {
+    if (!transcriptText && videoUrl?.trim()) {
       try {
         const transcript = await getYoutubeTranscriptInnerTube(videoUrl);
         if (transcript) {
           transcriptText = transcript.slice(0, 40000); // Limit to ~8,000 words
         } else {
-          transcriptFetchError = "Could not retrieve transcript from the video URL. It might not have closed captions, or it's restricted/private, or YouTube blocked the fetch request.";
+          transcriptFetchError = "Could not auto-retrieve transcript from the video URL. This is common on Vercel deployments due to YouTube firewall blocks. Please copy-paste the transcript directly below.";
         }
       } catch (err) {
         console.error("Failed to fetch transcript:", err);
-        transcriptFetchError = "Failed to load video transcript due to a network connection issue.";
+        transcriptFetchError = "Failed to load video transcript due to a network connection issue. Try copy-pasting the transcript directly instead.";
       }
     }
 
-    // If description is empty and transcript fetch failed, return validation error instead of crashing
+    // If description is empty and transcript is empty, return validation error
     if (!videoTopic?.trim() && !transcriptText) {
       return NextResponse.json({
         success: false,
-        error: transcriptFetchError || "Could not retrieve transcript from the video URL. Please provide a description of the video instead."
+        error: transcriptFetchError || "Could not retrieve transcript. Please paste the transcript directly or provide a short video description."
       }, { status: 400 });
     }
 
