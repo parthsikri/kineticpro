@@ -394,6 +394,12 @@ export default function SEOStudioPage() {
   const [audience,    setAudience]    = useState("");
   const [language,    setLanguage]    = useState("Hinglish");
   const [outline,     setOutline]     = useState("");
+  const [channelUrl,  setChannelUrl]  = useState("");
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("kinetic_seo_channel_url");
+    if (saved) setChannelUrl(saved);
+  }, []);
 
   const runGenerate = async (data) => {
     setError("");
@@ -417,7 +423,8 @@ export default function SEOStudioPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!videoTopic.trim()) return;
-    const data = { videoTopic, audience, language, outline };
+    localStorage.setItem("kinetic_seo_channel_url", channelUrl);
+    const data = { videoTopic, audience, language, outline, channelUrl };
     setFormData(data);
     runGenerate(data);
   };
@@ -432,6 +439,7 @@ export default function SEOStudioPage() {
   const handleNew = () => {
     setSeoResult(null); setError(""); setStep("INPUT");
     setVideoTopic(""); setAudience(""); setOutline("");
+    // Keep channelUrl populated for convenience
   };
 
   return (
@@ -510,6 +518,24 @@ export default function SEOStudioPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* YouTube Channel URL/Handle (Optional) */}
+            <div className="space-y-2">
+              <label className="premium-label flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-gold" />
+                YouTube Channel URL / Handle (Optional)
+                <span className="ml-2 text-[10px] text-muted normal-case font-normal tracking-normal">
+                  Loads recent uploads to dynamically recommend watch links in description
+                </span>
+              </label>
+              <input
+                type="text"
+                value={channelUrl}
+                onChange={e => setChannelUrl(e.target.value)}
+                placeholder="e.g. @PhysicsWallah or https://youtube.com/@PhysicsWallah"
+                className="premium-textarea py-2.5 text-sm"
+              />
             </div>
 
             {/* outline — optional */}

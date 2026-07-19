@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline } = body;
+    const { videoTopic, audience, language, outline, channelUrl } = body;
 
     if (!videoTopic?.trim()) {
       return NextResponse.json({ success: false, error: "Video topic is required." }, { status: 400 });
@@ -45,12 +45,38 @@ export async function POST(request) {
       ? `Generate chapters based on this outline: "${outline.trim()}"`
       : "Generate 7-9 logical chapters that make sense for this topic. Space them realistically (first at 0:00, rest 2-5 minutes apart).";
 
+    let videosSection = "";
+    if (channelUrl?.trim()) {
+      try {
+        const channelId = await getChannelId(channelUrl);
+        if (channelId) {
+          const videos = await getRecentVideos(channelId);
+          if (videos.length > 0) {
+            videosSection = [
+              "",
+              "RELATED VIDEOS FROM THE CREATOR'S CHANNEL:",
+              JSON.stringify(videos.slice(0, 10)),
+              "",
+              "INSTRUCTION FOR RELATED VIDEOS:",
+              "- Select 2 to 3 most relevant or contextually helpful videos from the list above.",
+              "- Embed them under a dedicated section inside the description called 'Recommended Videos to Watch next:'.",
+              "- Show each selected video's exact title and its exact watch link (url) from the list above. Do NOT modify or hallucinate the URLs.",
+              "- Place this section right before the CTA/social links at the bottom.",
+            ].join("\n");
+          }
+        }
+      } catch (err) {
+        console.error("YouTube scraping failed, proceeding without channel videos:", err);
+      }
+    }
+
     const userPrompt = [
       `VIDEO DESCRIPTION (what the video is about): "${videoTopic.trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
       "NOTE: The creator described their video content — you must generate the best possible titles from this description, not just reword it.",
       `LANGUAGE: "${lang}"`,
       `CHAPTERS INSTRUCTION: ${chapterInstruction}`,
+      videosSection,
       "",
       "Generate a complete, maximum-impact YouTube SEO package. Return ONLY this exact JSON:",
       "{",
@@ -136,6 +162,53 @@ export async function POST(request) {
       { status: 500 }
     );
   }
+}
+
+async function getChannelId(channelUrlOrHandle) {
+  let handle = channelUrlOrHandle.trim();
+  if (handle.includes("youtube.com/")) {
+    const parts = handle.split("youtube.com/");
+    handle = parts[1].split("/")[0].split("?")[0];
+  }
+  if (!handle.startsWith("@")) {
+    handle = "@" + handle;
+  }
+  
+  const response = await fetch(`https://www.youtube.com/${handle}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+  });
+  if (!response.ok) return null;
+  const html = await response.text();
+  
+  const match = html.match(/"channelId":"(UC[a-zA-Z0-9_-]{22})"/);
+  if (match) return match[1];
+  
+  const match2 = html.match(/channel\/([a-zA-Z0-9_-]{24})/);
+  if (match2) return match2[1];
+  
+  return null;
+}
+
+async function getRecentVideos(channelId) {
+  const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+  if (!response.ok) return [];
+  const xml = await response.text();
+  
+  const videos = [];
+  const entryMatches = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
+  for (const entry of entryMatches) {
+    const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
+    const linkMatch = entry.match(/<link[^>]*?href="([^"]+?)"/);
+    if (titleMatch && linkMatch) {
+      videos.push({
+        title: titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, "$1").trim(),
+        url: linkMatch[1].trim()
+      });
+    }
+  }
+  return videos;
 }
 
 function buildMockSEO(topic, language) {
