@@ -19,15 +19,27 @@ export async function POST(request) {
 
     // Fetch YouTube Video Transcript if URL is provided
     let transcriptText = "";
+    let transcriptFetchError = "";
     if (videoUrl?.trim()) {
       try {
         const transcript = await getYoutubeTranscriptInnerTube(videoUrl);
         if (transcript) {
           transcriptText = transcript.slice(0, 40000); // Limit to ~8,000 words
+        } else {
+          transcriptFetchError = "Could not retrieve transcript from the video URL. It might not have closed captions, or it's restricted/private, or YouTube blocked the fetch request.";
         }
       } catch (err) {
-        console.error("Failed to fetch transcript, continuing without it:", err);
+        console.error("Failed to fetch transcript:", err);
+        transcriptFetchError = "Failed to load video transcript due to a network connection issue.";
       }
+    }
+
+    // If description is empty and transcript fetch failed, return validation error instead of crashing
+    if (!videoTopic?.trim() && !transcriptText) {
+      return NextResponse.json({
+        success: false,
+        error: transcriptFetchError || "Could not retrieve transcript from the video URL. Please provide a description of the video instead."
+      }, { status: 400 });
     }
 
     let transcriptSection = "";
@@ -187,11 +199,12 @@ export async function POST(request) {
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     // Strip any accidental markdown code fences
-    const cleaned = rawText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/```\s*$/i, "")
-      .trim();
+    const firstBrace = rawText.indexOf("{");
+    const lastBrace = rawText.lastIndexOf("}");
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error(`No valid JSON block found in Gemini output: ${rawText}`);
+    }
+    const cleaned = rawText.substring(firstBrace, lastBrace + 1);
 
     const seo = JSON.parse(cleaned);
     return NextResponse.json({ success: true, seo });
@@ -199,7 +212,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("[SEO_ROUTE_ERROR]", error);
     return NextResponse.json(
-      { success: false, error: "SEO generation failed. Please try again." },
+      { success: false, error: error.message || "SEO generation failed. Please try again." },
       { status: 500 }
     );
   }
