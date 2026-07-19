@@ -395,10 +395,13 @@ export default function SEOStudioPage() {
   const [language,    setLanguage]    = useState("Hinglish");
   const [outline,     setOutline]     = useState("");
   const [channelUrl,  setChannelUrl]  = useState("");
+  const [defaultLinks, setDefaultLinks] = useState("");
 
   React.useEffect(() => {
-    const saved = localStorage.getItem("kinetic_seo_channel_url");
-    if (saved) setChannelUrl(saved);
+    const savedChannel = localStorage.getItem("kinetic_seo_channel_url");
+    if (savedChannel) setChannelUrl(savedChannel);
+    const savedLinks = localStorage.getItem("kinetic_seo_default_links");
+    if (savedLinks) setDefaultLinks(savedLinks);
   }, []);
 
   const runGenerate = async (data) => {
@@ -424,7 +427,8 @@ export default function SEOStudioPage() {
     e.preventDefault();
     if (!videoTopic.trim()) return;
     localStorage.setItem("kinetic_seo_channel_url", channelUrl);
-    const data = { videoTopic, audience, language, outline, channelUrl };
+    localStorage.setItem("kinetic_seo_default_links", defaultLinks);
+    const data = { videoTopic, audience, language, outline, channelUrl, defaultLinks };
     setFormData(data);
     runGenerate(data);
   };
@@ -439,7 +443,7 @@ export default function SEOStudioPage() {
   const handleNew = () => {
     setSeoResult(null); setError(""); setStep("INPUT");
     setVideoTopic(""); setAudience(""); setOutline("");
-    // Keep channelUrl populated for convenience
+    // Keep inputs populated for convenience
   };
 
   return (
@@ -535,6 +539,24 @@ export default function SEOStudioPage() {
                 onChange={e => setChannelUrl(e.target.value)}
                 placeholder="e.g. @PhysicsWallah or https://youtube.com/@PhysicsWallah"
                 className="premium-textarea py-2.5 text-sm"
+              />
+            </div>
+
+            {/* Default Links (Optional) */}
+            <div className="space-y-2">
+              <label className="premium-label flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-gold" />
+                Default Links / Socials (Optional)
+                <span className="ml-2 text-[10px] text-muted normal-case font-normal tracking-normal">
+                  Appended to the end of every description (WhatsApp, Telegram, socials, etc.)
+                </span>
+              </label>
+              <textarea
+                rows={3}
+                value={defaultLinks}
+                onChange={e => setDefaultLinks(e.target.value)}
+                placeholder="📱 WhatsApp Group: https://chat.whatsapp.com/...&#10;💬 Join Telegram: https://t.me/...&#10;📸 Instagram: https://instagram.com/..."
+                className="premium-textarea resize-none text-sm"
               />
             </div>
 

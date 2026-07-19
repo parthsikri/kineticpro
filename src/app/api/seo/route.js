@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks } = body;
 
     if (!videoTopic?.trim()) {
       return NextResponse.json({ success: false, error: "Video topic is required." }, { status: 400 });
@@ -70,6 +70,19 @@ export async function POST(request) {
       }
     }
 
+    let defaultLinksSection = "";
+    if (defaultLinks?.trim()) {
+      defaultLinksSection = [
+        "",
+        "DEFAULT PROMOTIONAL LINKS / SOCIALS TO APPEND:",
+        defaultLinks.trim(),
+        "",
+        "INSTRUCTION FOR DEFAULT PROMOTIONAL LINKS:",
+        "- You MUST append this exact promotional/social text block at the very end of the video description.",
+        "- Do NOT translate, modify, or omit any links or text from this block.",
+      ].join("\n");
+    }
+
     const userPrompt = [
       `VIDEO DESCRIPTION (what the video is about): "${videoTopic.trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
@@ -77,6 +90,7 @@ export async function POST(request) {
       `LANGUAGE: "${lang}"`,
       `CHAPTERS INSTRUCTION: ${chapterInstruction}`,
       videosSection,
+      defaultLinksSection,
       "",
       "Generate a complete, maximum-impact YouTube SEO package. Return ONLY this exact JSON:",
       "{",
