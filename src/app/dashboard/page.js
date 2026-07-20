@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import ThumbnailForm from "../components/ThumbnailForm";
 import ClarifyStep   from "../components/ClarifyStep";
 import ImageResult   from "../components/ImageResult";
@@ -113,7 +112,6 @@ const compositePhotos = async (photosArray) => {
    Steps: INPUT -> GENERATING -> (optional) CLARIFY -> GENERATING -> RESULT
    ==================================================================== */
 export default function Home() {
-  const router = useRouter();
   const [step, setStep]               = useState("INPUT"); // INPUT | GENERATING | CLARIFY | RESULT
   const [formData, setFormData]       = useState(null);
   const [clarifyQuestions, setClarifyQuestions] = useState([]);
@@ -123,8 +121,6 @@ export default function Home() {
   const [isSandbox, setIsSandbox]     = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
   const [clarifyLoading, setClarifyLoading]   = useState(false);
-
-  /* -- Shared: call /api/plan with a topic string ---------------- */
   const callPlan = async (topicString, data) => {
     const planRes = await fetch("/api/plan", {
       method:  "POST",
@@ -187,7 +183,9 @@ export default function Home() {
       const urls = await callGenerate(planData.plan, dataWithComposite);
       setImageUrls(urls);
       setStep("RESULT");
-      router.refresh();
+      // NOTE: do NOT call router.refresh() here — the layout is force-dynamic and
+      // re-reading credits after generation (which just consumed 1 credit) causes the
+      // layout to show the "Upgrade to Continue" wall instead of the result page.
 
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
@@ -225,7 +223,6 @@ export default function Home() {
       const urls = await callGenerate(planData.plan, dataWithComposite);
       setImageUrls(urls);
       setStep("RESULT");
-      router.refresh();
 
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
