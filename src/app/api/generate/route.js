@@ -132,7 +132,7 @@ export async function POST(request) {
         const editPrompt = `${variantPrompt}\n\nCRITICAL: Use the person from the provided reference photo as the subject. Preserve their face, skin tone, and likeness with absolute accuracy. Style them dramatically for a high-production YouTube thumbnail.`;
         formData.append("prompt", editPrompt);
         formData.append("model", modelName);
-        formData.append("size", "1792x1024");
+        formData.append("size", "2560x1440");
         formData.append("quality", "low");
         formData.append("n", "1");
 
@@ -219,7 +219,7 @@ async function generateFromText(apiKey, modelName, imagePrompt) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "1792x1024", quality: "low", output_format: "png" }),
+    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "2560x1440", quality: "low", output_format: "png" }),
   });
   if (!response.ok) {
     const errText = await response.text();
