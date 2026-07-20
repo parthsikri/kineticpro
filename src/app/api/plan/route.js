@@ -25,12 +25,12 @@ export async function POST(request) {
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
 
-    /* ── Mock fallback (no key) ─────────────────────────────────── */
+    /* ── Mock fallback (no key) — always skip to full plan so sandbox works end-to-end ── */
     if (!apiKey) {
       console.log("DeepSeek key missing — returning smart fallback plan");
       await new Promise(r => setTimeout(r, 1400));
-      const plan = buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode });
-      return NextResponse.json({ success: true, plan, isMock: true });
+      const plan = buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode }, true);
+      return NextResponse.json({ success: true, needsMoreInfo: false, plan, isMock: true });
     }
 
     /* ── Live DeepSeek call ─────────────────────────────────────── */
@@ -383,8 +383,8 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
 }
 
 /* ── Smart fallback (no API key) ──────────────────────────────────── */
-function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
-  const isSecondPass = videoTopic.includes("Additional details provided by creator:");
+function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }, forceFull = false) {
+  const isSecondPass = forceFull || videoTopic.includes("Additional details provided by creator:");
 
   if (!isSecondPass) {
     return {
