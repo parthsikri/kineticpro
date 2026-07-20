@@ -245,7 +245,7 @@ export async function POST(request) {
 
     // Build the COMPLETE thumbnail prompt — text fully included, nothing added in browser
     plan.imagePrompt = buildCompleteThumbnailPrompt(plan, {
-      brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode,
+      videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode,
     });
 
     return NextResponse.json({ success: true, needsMoreInfo: false, plan });
@@ -256,7 +256,7 @@ export async function POST(request) {
   }
 }
 
-function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
+function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
   const dynamicPose = plan.subjectPose || "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression";
@@ -345,6 +345,13 @@ function buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSub
     "Bold typography, dramatic backgrounds, expressive presenter, coloured text banners, official notice card overlays. " +
     "Ultra high production value.\n\n" +
     "FORMAT: 16:9 landscape (1280x720)\n\n" +
+    "VIDEO TOPIC: " + (videoTopic || "") + "\n" +
+    "This is what the thumbnail must visually represent. " +
+    "The background scene, any props the subject holds, any visible objects, and the overall visual metaphor " +
+    "must all clearly communicate this specific topic at a glance. " +
+    "For example: if the topic is Engineering Drawing, include drafting tools, T-squares, blueprints, technical sheets. " +
+    "If Maths, include equations on a board. If History, include relevant artefacts. " +
+    "The subject matter must be UNMISTAKABLY CLEAR from the visuals alone.\n\n" +
     "LAYOUT ZONES:\n" +
     "- LEFT 40% — Subject / Person (with dramatic lighting)\n" +
     "- CENTER — Supporting graphic elements (date callout if any)\n" +
@@ -448,6 +455,6 @@ function buildFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectP
     imagePrompt: "",
   };
 
-  plan.imagePrompt = buildCompleteThumbnailPrompt(plan, { brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode });
+  plan.imagePrompt = buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode });
   return plan;
 }
