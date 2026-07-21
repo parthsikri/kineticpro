@@ -14,7 +14,13 @@ export default function AssetSelector({ onSelect, selectedBase64 }) {
       const res = await fetch("/api/assets");
       const data = await res.json();
       if (data.success) {
-        setImages(data.images);
+        // Exclude any generated thumbnails
+        const filtered = (data.images || []).filter(img => 
+          !img.url?.includes("generated/") && 
+          !img.filename?.startsWith("remote_") && 
+          !img.filename?.includes("generated")
+        );
+        setImages(filtered);
       }
     } catch (error) {
       console.error("Failed to fetch images", error);

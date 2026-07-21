@@ -12,12 +12,21 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const images = await prisma.userImage.findMany({
+    const allImages = await prisma.userImage.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, images: await withSignedImageUrls(images) });
+    // Strictly filter for uploaded subject assets, excluding generated thumbnails
+    const userAssets = allImages.filter((img) => {
+      const isGenerated =
+        img.url.includes("generated/") ||
+        img.filename.startsWith("remote_") ||
+        img.filename.includes("generated");
+      return !isGenerated;
+    });
+
+    return NextResponse.json({ success: true, images: await withSignedImageUrls(userAssets) });
   } catch (error) {
     console.error("GET Assets error:", error);
     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
