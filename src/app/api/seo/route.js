@@ -11,35 +11,12 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, videoUrl, pastedTranscript } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, pastedTranscript } = body;
 
-    if (!videoTopic?.trim() && !videoUrl?.trim() && !pastedTranscript?.trim()) {
-      return NextResponse.json({ success: false, error: "Please provide either a video description, a YouTube URL, or a pasted transcript." }, { status: 400 });
-    }
+    const transcriptText = pastedTranscript?.trim() || "";
 
-    // Fetch or use pasted YouTube Video Transcript
-    let transcriptText = pastedTranscript?.trim() || "";
-    let transcriptFetchError = "";
-    if (!transcriptText && videoUrl?.trim()) {
-      try {
-        const transcript = await getYoutubeTranscriptInnerTube(videoUrl);
-        if (transcript) {
-          transcriptText = transcript.slice(0, 40000); // Limit to ~8,000 words
-        } else {
-          transcriptFetchError = "Could not auto-retrieve transcript from the video URL. This is common on Vercel deployments due to YouTube firewall blocks. Please copy-paste the transcript directly below.";
-        }
-      } catch (err) {
-        console.error("Failed to fetch transcript:", err);
-        transcriptFetchError = "Failed to load video transcript due to a network connection issue. Try copy-pasting the transcript directly instead.";
-      }
-    }
-
-    // If description is empty and transcript is empty, return validation error
     if (!videoTopic?.trim() && !transcriptText) {
-      return NextResponse.json({
-        success: false,
-        error: transcriptFetchError || "Could not retrieve transcript. Please paste the transcript directly or provide a short video description."
-      }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Please describe your video topic or paste a transcript." }, { status: 400 });
     }
 
     let transcriptSection = "";
@@ -68,13 +45,11 @@ export async function POST(request) {
     }
 
     const systemInstruction = [
-      "You are the world's #1 YouTube SEO strategist specializing in Indian education, news, tech, and entertainment channels.",
-      "You have deep knowledge of YouTube's search algorithm, click-through rate optimization, and Hindi/English/Hinglish content strategy.",
-      "Your job is to generate a COMPLETE, publish-ready YouTube SEO package for a long-format video.",
-      "IMPORTANT: The creator will describe what their video is ABOUT — they are NOT giving you the final title.",
-      "You must deeply understand the topic from their description and craft the most powerful, click-worthy, SEO-optimised titles yourself.",
-      "Think like a top Indian YouTuber — what title would make 1 million people stop scrolling and click?",
-      "Every field must be optimized for maximum discoverability, watch time, and subscriber growth.",
+      "You are the world's #1 YouTube SEO & CTR Strategist.",
+      "You have deep knowledge of YouTube's search and recommendation algorithm, keyword indexing, and high-CTR title formulas.",
+      "Your job is to generate a publishing-ready, maximum-reach YouTube SEO package.",
+      "CRITICAL TITLE RULE: Each generated title MUST BE SHORT, CONCISE, AND STRICTLY UNDER 60 CHARACTERS (and under 12 words). YouTube truncates long titles on mobile devices — short, punchy titles perform 3x better.",
+      "Front-load the primary search keyword at the very beginning of the title.",
       "Respond ONLY with valid raw JSON — no markdown, no code blocks, no explanation outside the JSON.",
     ].join("\n");
 
@@ -122,9 +97,8 @@ export async function POST(request) {
     }
 
     const userPrompt = [
-      `VIDEO DESCRIPTION (what the video is about): "${(videoTopic || "").trim()}"`,
+      `VIDEO TOPIC / DESCRIPTION: "${(videoTopic || "").trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
-      "NOTE: The creator described their video content — you must generate the best possible titles from this description, not just reword it.",
       `LANGUAGE: "${lang}"`,
       `CHAPTERS INSTRUCTION: ${chapterInstruction}`,
       videosSection,
@@ -134,30 +108,30 @@ export async function POST(request) {
       "Generate a complete, maximum-impact YouTube SEO package. Return ONLY this exact JSON:",
       "{",
       '  "titles": [',
-      '    "Title 1: Primary keyword at front, high curiosity, 50-60 chars, in ' + lang + '",',
-      '    "Title 2: Different emotional angle or controversy hook",',
-      '    "Title 3: Number/listicle or question format — triggers curiosity"',
+      '    "Title 1: Under 60 characters — primary keyword front-loaded, ultra-punchy, high CTR in ' + lang + '",',
+      '    "Title 2: Under 60 characters — high curiosity or emotional hook",',
+      '    "Title 3: Under 60 characters — question or listicle format"' +
       "  ],",
-      '  "description": "Full 5-paragraph SEO description (minimum 350 words). Para 1: Powerful hook + what viewers will learn. Para 2-3: Dense keyword-rich body covering all subtopics naturally. Para 4: Strong CTA (like, subscribe, comment). Para 5: Social links / chapter note placeholder. Use \\n\\n between paragraphs. Include 3-4 relevant emojis naturally. Language: ' + lang + '",',
-      '  "tags": ["tag1", "tag2", "...EXACTLY 40 tags — 10 broad, 15 specific, 15 long-tail. Mix English + transliterated Hindi where topic is Indian"],',
-      '  "hashtags": ["#hashtag1", "...exactly 8 hashtags — trending, topic-relevant, mix of English and Hindi"],',
+      '  "description": "Full 5-paragraph SEO description (minimum 350 words). Para 1: Powerful 2-sentence hook with primary keywords. Para 2-3: Detailed value breakdown covering key concepts and search intent naturally. Para 4: Strong CTA (like, subscribe, comment). Para 5: Social links / chapter note placeholder. Use \\n\\n between paragraphs. Include 3-4 relevant emojis. Language: ' + lang + '",',
+      '  "tags": ["tag1", "tag2", "...EXACTLY 40 high-volume search tags — mix of broad, specific, long-tail, and transliterated Hinglish/English terms"],',
+      '  "hashtags": ["#hashtag1", "...exactly 8 trending hashtags"],',
       '  "chapters": [',
       '    { "time": "0:00", "title": "Introduction" },',
       '    { "time": "2:30", "title": "Next chapter..." }',
       "  ],",
       '  "primaryKeywords": ["top 3 highest-volume keywords for this topic"],',
       '  "secondaryKeywords": ["8 supporting keywords and LSI terms"],',
-      '  "seoScore": 85,',
+      '  "seoScore": 92,',
       '  "seoScoreBreakdown": {',
-      '    "titleStrength": 90,',
-      '    "descriptionDepth": 85,',
-      '    "tagCoverage": 80,',
-      '    "keywordDensity": 82',
+      '    "titleStrength": 95,',
+      '    "descriptionDepth": 90,',
+      '    "tagCoverage": 92,',
+      '    "keywordDensity": 88',
       "  },",
       '  "seoTips": [',
-      '    "Specific tip 1 — actionable improvement for this exact topic",',
-      '    "Specific tip 2 — what to pin in comments for ranking",',
-      '    "Specific tip 3 — thumbnail/card strategy for watch time"',
+      '    "Specific tip 1 — actionable comment pin strategy for this topic",',
+      '    "Specific tip 2 — description keyword placement optimization",',
+      '    "Specific tip 3 — card & end screen strategy for watch time"',
       "  ],",
       '  "bestUploadTime": "e.g. Tuesday or Thursday, 6 PM - 9 PM IST",',
       '  "competitionLevel": "Low | Medium | High",',
@@ -165,12 +139,10 @@ export async function POST(request) {
       "}",
       "",
       "STRICT RULES:",
-      "- titles must be in " + lang + " — natural, not forced",
-      "- tags: mix keyword variants, avoid pure duplicates. If topic is Hindi/Hinglish, include both Hindi and English forms",
-      "- seoScore: be honest 1-100 based on actual keyword competition and topic specificity",
-      "- seoTips: be ultra-specific to THIS video topic, not generic advice",
-      "- chapters: realistic timings, engaging titles that make viewers want to jump to sections",
-      "- description: MUST be minimum 350 words, rich with natural keyword placement",
+      "- EVERY title in the 'titles' array MUST BE STRICTLY UNDER 60 CHARACTERS.",
+      "- titles must be in " + lang + " — highly engaging and natural",
+      "- tags: exactly 40 distinct tags, no plain duplicates",
+      "- description: MUST be minimum 350 words, rich with natural search keywords",
     ].join("\n");
 
     const geminiRes = await fetch(
