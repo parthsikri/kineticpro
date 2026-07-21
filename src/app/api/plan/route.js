@@ -19,6 +19,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode } = body;
+    const creatorType = body.creatorType || user.creatorType || "education";
     if (typeof videoTopic !== "string" || videoTopic.trim().length === 0 || videoTopic.length > 8_000) {
       return NextResponse.json({ success: false, error: "Video topic must be between 1 and 8,000 characters." }, { status: 400 });
     }
@@ -245,7 +246,7 @@ export async function POST(request) {
 
     // Build the COMPLETE thumbnail prompt — text fully included, nothing added in browser
     plan.imagePrompt = buildCompleteThumbnailPrompt(plan, {
-      videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode,
+      videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType,
     });
 
     return NextResponse.json({ success: true, needsMoreInfo: false, plan });
@@ -256,7 +257,7 @@ export async function POST(request) {
   }
 }
 
-function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode }) {
+function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
   const dynamicPose = plan.subjectPose || "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression";
@@ -337,6 +338,42 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
   const textSection = textElements.length > 0
     ? textElements.map((el, i) => ((i + 1) + ". " + el)).join("\n\n")
     : "Bold impactful headline on the left side in white Impact font with accent-colored supporting text below";
+
+  if (creatorType === "vlogs") {
+    return (
+      "Generate a COMPLETE, cinematic Vlog YouTube thumbnail image. Every element described below must appear " +
+      "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
+      "REFERENCE STYLE: Top Indian & Global Lifestyle Vlogger thumbnails (Flying Beast, Sourav Joshi Vlogs). " +
+      "Candid storytelling, ultra-expressive presenter, warm cinematic lighting, bold headline text.\n\n" +
+      "FORMAT: 16:9 landscape (2560x1440)\n\n" +
+      "VLOG STORY/TOPIC: " + (videoTopic || "") + "\n" +
+      "This is what the thumbnail must visually represent. The background scene, any props the subject holds, any visible objects, and the overall visual metaphor " +
+      "must all clearly communicate this specific vlog story at a glance. Include realistic props matching the story (e.g. vlog camera on gorilla pod, suitcases, car keys, gift wrapping).\n\n" +
+      "LAYOUT ZONES:\n" +
+      "- LEFT/CENTER 50% — Expressive Vlogger / Subjects (with warm, natural rim lighting)\n" +
+      "- RIGHT / TOP — High-contrast stacked headline text and location pill badge\n" +
+      "- BACKGROUND — Real-world immersive location (airport lounge, scenic drive, home lounge) with 35mm bokeh\n\n" +
+      "SUBJECT:\n" + subjectNote + "\n\n" +
+      "BACKGROUND:\n" +
+      "Cinematic real-world environment. " + brandColor + " is used as warm atmospheric accent and rim lighting on the subject. Shallow depth of field.\n\n" +
+      "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):\n" +
+      textSection + "\n\n" +
+      "TYPOGRAPHY RULES:\n" +
+      "- Headlines: Impact or ultra-bold condensed sans-serif, ALL CAPS, 2 lines max\n" +
+      "- Badges/pills: Bold rounded location or series pill\n" +
+      "- All text: 100% correctly spelled, sharp edges, strong drop-shadow for legibility over real-world backgrounds\n\n" +
+      "ANATOMY RULES (CRITICAL):\n" +
+      "- The subject MUST have exactly two natural arms and hands.\n" +
+      "- Hands must be perfectly formed, anatomically correct, and attached naturally to the body.\n\n" +
+      "COLOR PALETTE:\n" +
+      "- Brand/dominant: " + brandColor + "\n" +
+      "- Accent/highlight: " + accent + "\n" +
+      "- Primary text: #FFFFFF (white)\n" +
+      "- Secondary text: " + accent + "\n\n" +
+      "QUALITY: Photorealistic, 4K magazine-cover grade, hyper-engaging. " +
+      "Make it visually irresistible so viewers instantly want to click and see what happened."
+    );
+  }
 
   return (
     "Generate a COMPLETE, professional YouTube thumbnail image. Every element described below must appear " +
