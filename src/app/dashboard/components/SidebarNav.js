@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard, Shield, Search } from "lucide-react";
+import { LayoutDashboard, Image as ImageIcon, Settings, History, CreditCard, Shield, Search, Info } from "lucide-react";
 
 export default function SidebarNav({ isAdmin }) {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export default function SidebarNav({ isAdmin }) {
     { name: "History",      href: "/dashboard/history",  icon: History         },
     { name: "SEO Studio",   href: "/dashboard/seo",      icon: Search          },
     { name: "My Assets",    href: "/dashboard/assets",   icon: ImageIcon       },
+    { name: "More Info",    href: "/dashboard/more-info", icon: Info           },
     { name: "Plans & Pricing", href: "/dashboard/pricing", icon: CreditCard   },
     { name: "Settings",     href: "/dashboard/settings", icon: Settings        },
   ];
