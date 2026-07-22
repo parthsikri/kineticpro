@@ -373,6 +373,36 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
       "QUALITY: Photorealistic, 4K magazine-cover grade, hyper-engaging. " +
       "Make it visually irresistible so viewers instantly want to click and see what happened."
     );
+  if (creatorType === "gaming") {
+    return (
+      "Generate a COMPLETE, explosive Gaming YouTube thumbnail image. Every element described below must appear " +
+      "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
+      "REFERENCE STYLE: Top-tier Esports & Gaming Creator thumbnails (Techno Gamerz, Total Gaming, CarryMinati, MrBeast Gaming). " +
+      "Hyper-expressive gamer reaction, 3D game environment, volumetric lighting, epic particle effects, high-CTR 3D text.\n\n" +
+      "FORMAT: 16:9 landscape (2560x1440)\n\n" +
+      "GAMING TOPIC / CHALLENGE: " + (videoTopic || "") + "\n" +
+      "This is what the thumbnail must visually represent. The game world, props, and environment must immediately tell the story " +
+      "(e.g. holding a glowing game controller or keyboard, surrounded by loot crates, explosive battle royale background, or rare secret room).\n\n" +
+      "COLOR & LIGHTING (DYNAMIC ADAPTIVE):\n" +
+      "Do NOT restrict to a single color. Dynamically choose the best high-contrast color palette matching the specific game world " +
+      "(e.g., glowing neon cyan, fiery orange/yellow sparks, intense purple energy, or dark cinematic moody atmospheric lighting). " +
+      "Dramatic volumetric light rays and rim lighting on the subject.\n\n" +
+      "LAYOUT ZONES:\n" +
+      "- LEFT 45% — Gamer/Presenter wearing a gaming headset with extreme, expressive facial reaction (jaw-dropped shock, shouting victory, or intense focus).\n" +
+      "- RIGHT 55% — Immersive 3D game action environment with cinematic depth of field, embers, and action effects.\n" +
+      "- OVERLAYS — High-contrast 3D headline text and game badge overlay.\n\n" +
+      "SUBJECT:\n" + subjectNote + "\n\n" +
+      "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):\n" +
+      textSection + "\n\n" +
+      "TYPOGRAPHY RULES:\n" +
+      "- Headlines: Ultra-bold Impact font with 3D bevel effect, ALL CAPS, short intriguing 2-line phrase (e.g. 'INSANE CLUTCH!' or 'SECRET ROOM!'). Strong text shadow and glowing border for perfect readability.\n" +
+      "- Badges: Game rank emblem or 1v4 survivor pill tag.\n" +
+      "- All text: 100% correctly spelled, sharp 3D edges, glowing contrast over busy game backgrounds.\n\n" +
+      "ANATOMY RULES (CRITICAL):\n" +
+      "- The subject MUST have exactly two natural arms and hands.\n" +
+      "- Hands must be perfectly formed, anatomically correct, and attached naturally to the body.\n\n" +
+      "QUALITY: Photorealistic, 4K render quality, hyper-engaging, maximum CTR. Make it visually thrilling so gamers scroll-stoppingly click."
+    );
   }
 
   return (
