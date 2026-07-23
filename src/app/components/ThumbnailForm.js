@@ -16,6 +16,42 @@ const COLOR_PRESETS = [
   { id: "custom",      hex: null,      label: "+"      },
 ];
 
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 768;
+        const MAX_HEIGHT = 768;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.7)); // Compress as JPEG
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 export default function ThumbnailForm({ onSubmit, loading }) {
   const [uploadMode, setUploadMode]         = useState("3d-face"); // "3d-face" | "multi-person"
   const [faceSlots, setFaceSlots]           = useState({ front: null, left: null, right: null });
@@ -33,11 +69,12 @@ export default function ThumbnailForm({ onSubmit, loading }) {
   const fileRef = useRef(null);
 
   /* ── File Upload to Slot ─────────────────────────────────────── */
-  const handleSlotFile = (file, slotKey) => {
+  const handleSlotFile = async (file, slotKey) => {
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const data = { preview: reader.result, base64: reader.result };
+    try {
+      const compressedBase64 = await compressImage(file);
+      const data = { preview: compressedBase64, base64: compressedBase64 };
+      
       if (uploadMode === "3d-face") {
         setFaceSlots(prev => ({ ...prev, [slotKey]: data }));
       } else {
@@ -45,10 +82,12 @@ export default function ThumbnailForm({ onSubmit, loading }) {
           alert("You can only add up to 3 people.");
           return;
         }
-        setPhotos(prev => [...prev, { id: Date.now(), preview: reader.result, base64: reader.result }]);
+        setPhotos(prev => [...prev, { id: Date.now(), preview: compressedBase64, base64: compressedBase64 }]);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image compression failed", err);
+      alert("Failed to process the image. Try a different one.");
+    }
   };
 
   const handleSlotAssetSelect = (base64) => {
