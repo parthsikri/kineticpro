@@ -75,7 +75,7 @@ const compositePhotos = async (photosArray) => {
         if (failed) return;
         loaded++;
         if (loaded === photosArray.length) {
-          const maxHeight = 1024;
+          const maxHeight = 512;
           let totalWidth = 0;
           const scaledImages = images.map(img => {
             const scale = maxHeight / img.height;
@@ -92,7 +92,7 @@ const compositePhotos = async (photosArray) => {
             ctx.drawImage(img, currentX, 0, width, height);
             currentX += width;
           });
-          resolve(canvas.toDataURL("image/png"));
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         }
       };
       img.onerror = () => {
