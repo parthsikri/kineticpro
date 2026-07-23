@@ -24,7 +24,7 @@ const GEN_STEPS = [
   { label: "Researching high-volume keywords…",  icon: TrendingUp },
   { label: "Crafting SEO-optimised titles…",     icon: FileText  },
   { label: "Writing power description…",         icon: AlignLeft },
-  { label: "Building tag & hashtag library…",    icon: Tag       },
+  { label: "Building tag & hashtag library…",    icon: Target    },
   { label: "Generating chapter timestamps…",     icon: Clock     },
   { label: "Scoring your SEO package…",          icon: Award     },
 ];
@@ -74,7 +74,8 @@ function GeneratingScreen() {
   );
 }
 
-/* ── generating animation ───────────────────────────────────── */
+/* ── chapters feature ───────────────────────────────────── */
+function ChaptersFeature() {
   const [step, setStep] = useState("INPUT");
   const [videoUrl, setVideoUrl] = useState("");
   const [pastedTranscript, setPastedTranscript] = useState("");
