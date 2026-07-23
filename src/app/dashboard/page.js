@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import ThumbnailForm from "../components/ThumbnailForm";
 import ClarifyStep   from "../components/ClarifyStep";
 import ImageResult   from "../components/ImageResult";
+import SeoResultPanel from "./components/SeoResultPanel";
 import { Cpu, Key, Sparkles } from "lucide-react";
 
 /* -- Loading progress steps ----------------------------------------- */
 const STEPS = [
-  { id: 1, label: "Analysing your topic…",           duration: 1200 },
-  { id: 2, label: "AI crafting design strategy…",    duration: 1800 },
-  { id: 3, label: "Kinetic AI painting thumbnail…",  duration: 0    },
+  { id: 1, label: "Analysing your topic & SEO…",           duration: 1200 },
+  { id: 2, label: "AI crafting design & keywords…",        duration: 1800 },
+  { id: 3, label: "Kinetic AI painting thumbnail…",        duration: 0    },
 ];
 
 function GeneratingScreen() {
@@ -121,6 +122,9 @@ export default function Home() {
   const [isSandbox, setIsSandbox]     = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
   const [clarifyLoading, setClarifyLoading]   = useState(false);
+  const [seoResult, setSeoResult]             = useState(null);
+  const [regenSeoLoading, setRegenSeoLoading] = useState(false);
+  const [creatorType]                         = useState("education");
   const callPlan = async (topicString, data) => {
     const planRes = await fetch("/api/plan", {
       method:  "POST",
@@ -163,9 +167,39 @@ export default function Home() {
     setFormData(data);
     setError("");
     setStep("GENERATING");
+    setSeoResult(null);
 
     try {
-      const planData = await callPlan(data.videoTopic, data);
+      const callSeo = async (formData) => {
+        const seoRes = await fetch("/api/seo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            videoTopic: formData.videoTopic,
+            syllabusFile: formData.syllabusFile,
+          }),
+        });
+        const d = await seoRes.json();
+        if (!d.success) throw new Error(d.error || "SEO failed");
+        return d.seo;
+      };
+
+      const [planRes, seoRes] = await Promise.allSettled([
+        callPlan(data.videoTopic, data),
+        callSeo(data)
+      ]);
+
+      if (seoRes.status === "fulfilled") {
+        setSeoResult(seoRes.value);
+      } else {
+        console.error("SEO Error:", seoRes.reason);
+      }
+
+      if (planRes.status === "rejected") {
+        throw planRes.reason;
+      }
+
+      const planData = planRes.value;
 
       // AI needs more info — show clarify step
       if (planData.needsMoreInfo) {
@@ -250,7 +284,30 @@ export default function Home() {
 
   const handleNew = () => {
     setFormData(null); setPlan(null); setImageUrls([]); setError("");
-    setClarifyQuestions([]); setStep("INPUT");
+    setClarifyQuestions([]); setStep("INPUT"); setSeoResult(null);
+  };
+
+  const handleRegenerateSeo = async () => {
+    if (!formData) return;
+    setRegenSeoLoading(true);
+    try {
+      const seoRes = await fetch("/api/seo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoTopic: formData.videoTopic,
+          syllabusFile: formData.syllabusFile,
+        }),
+      });
+      const d = await seoRes.json();
+      if (!d.success) throw new Error(d.error || "SEO failed");
+      setSeoResult(d.seo);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to regenerate SEO.");
+    } finally {
+      setRegenSeoLoading(false);
+    }
   };
 
   return (
@@ -307,7 +364,7 @@ IMAGE_MODEL_NAME=kinetic-image-engine`}
 
       {/* Main content */}
       <main className="w-full">
-        {step === "INPUT"      && <ThumbnailForm onSubmit={handleGenerate} loading={false} />}
+        {step === "INPUT"      && <ThumbnailForm onSubmit={handleGenerate} loading={false} creatorType={creatorType} />}
         {step === "GENERATING" && <GeneratingScreen />}
         {step === "CLARIFY"    && (
           <ClarifyStep
@@ -318,13 +375,21 @@ IMAGE_MODEL_NAME=kinetic-image-engine`}
           />
         )}
         {step === "RESULT"     && (
-          <ImageResult
-            imageUrls={imageUrls}
-            onRecreate={handleRegenerate}
-            onNew={handleNew}
-            plan={plan}
-            brandColor={formData?.brandColor || "#1a3fd4"}
-          />
+          <div className="space-y-12">
+            <ImageResult
+              imageUrls={imageUrls}
+              onRecreate={handleRegenerate}
+              onNew={handleNew}
+              plan={plan}
+              brandColor={formData?.brandColor || "#1a3fd4"}
+            />
+            {seoResult && (
+              <div className="pt-8 border-t border-white/10">
+                <h3 className="text-xl font-bold text-white mb-6 text-center">Your SEO Package</h3>
+                <SeoResultPanel seo={seoResult} onRegenerate={handleRegenerateSeo} loading={regenSeoLoading} hideNewButton={true} />
+              </div>
+            )}
+          </div>
         )}
       </main>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Sparkles, Upload, X, Palette, Video, Camera, CheckCircle2, Info, UserCheck, HelpCircle, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Sparkles, Upload, X, Palette, Video, Camera, CheckCircle2, Info, UserCheck, HelpCircle, ChevronDown, ChevronUp, RefreshCw, FileText } from "lucide-react";
 import AssetSelector from "./AssetSelector";
 
 const COLOR_PRESETS = [
@@ -52,7 +52,7 @@ const compressImage = (file) => {
   });
 };
 
-export default function ThumbnailForm({ onSubmit, loading }) {
+export default function ThumbnailForm({ onSubmit, loading, creatorType }) {
   const [uploadMode, setUploadMode]         = useState("3d-face"); // "3d-face" | "multi-person"
   const [faceSlots, setFaceSlots]           = useState({ front: null, left: null, right: null });
   const [photos, setPhotos]                 = useState([]); // Array of { id, preview, base64 } for multi-person mode
@@ -65,8 +65,10 @@ export default function ThumbnailForm({ onSubmit, loading }) {
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [activeSlot, setActiveSlot]         = useState("front"); // "front" | "left" | "right" | "custom"
   const [showExpectations, setShowExpectations] = useState(true);
+  const [syllabusFile, setSyllabusFile]     = useState(null);
 
   const fileRef = useRef(null);
+  const syllabusRef = useRef(null);
 
   /* ── File Upload to Slot ─────────────────────────────────────── */
   const handleSlotFile = async (file, slotKey) => {
@@ -165,7 +167,7 @@ export default function ThumbnailForm({ onSubmit, loading }) {
       subjectPhotos = photos.map(p => p.base64);
     }
 
-    onSubmit({ videoTopic, brandColor, highlightColor, subjectPhotos, poseMode });
+    onSubmit({ videoTopic, brandColor, highlightColor, subjectPhotos, poseMode, syllabusFile });
   };
 
   const totalFaceCount = uploadMode === "3d-face"
@@ -194,6 +196,58 @@ export default function ThumbnailForm({ onSubmit, loading }) {
             Just describe your video — AI handles everything else (title, overlays, style, layout)
           </p>
         </div>
+
+        {/* ── Syllabus Upload (Education Only) ─────────────────── */}
+        {creatorType === "education" && (
+          <div className="space-y-2">
+            <label className="premium-label flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5 text-gold" />
+              Upload Syllabus (Optional)
+            </label>
+            <div className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+              syllabusFile ? "border-gold bg-gold/5" : "border-border hover:border-gold/30 bg-black/20"
+            }`} onClick={() => syllabusRef.current?.click()}>
+              {syllabusFile ? (
+                <div className="flex items-center justify-between text-left">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold text-white">Syllabus Uploaded</p>
+                      <p className="text-[10px] text-muted">Ready for SEO & Thumbnail context</p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setSyllabusFile(null); }} className="p-1 hover:bg-white/10 rounded-full">
+                    <X className="w-4 h-4 text-muted" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-muted">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-off-white">Click to Upload PDF or Image</p>
+                    <p className="text-[10px] text-muted font-light mt-1">Helps DeepSeek generate hyper-targeted SEO tags</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <input
+              ref={syllabusRef}
+              type="file"
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => setSyllabusFile({ data: reader.result, type: file.type });
+                e.target.value = null;
+              }}
+            />
+          </div>
+        )}
 
         {/* ── Photo upload & 3D Face Trainer ─────────────────────── */}
         <div className="space-y-4">
@@ -570,7 +624,7 @@ export default function ThumbnailForm({ onSubmit, loading }) {
           {loading ? (
             <><div className="loader mr-2" />AI is crafting your thumbnail...</>
           ) : (
-            <><Sparkles className="w-4 h-4 mr-2" />GENERATE MY THUMBNAIL</>
+            <><Sparkles className="w-4 h-4 mr-2" />GENERATE NOW</>
           )}
         </button>
 

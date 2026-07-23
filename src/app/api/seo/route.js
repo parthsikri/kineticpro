@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "../../../lib/auth";
+import { extractTextFromDocument } from "../../../lib/visionExtraction";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, pastedTranscript } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, pastedTranscript, syllabusFile } = body;
 
     const transcriptText = pastedTranscript?.trim() || "";
 
@@ -96,6 +97,22 @@ export async function POST(request) {
       ].join("\n");
     }
 
+    let syllabusSection = "";
+    if (syllabusFile) {
+      const extractedText = await extractTextFromDocument(syllabusFile);
+      if (extractedText) {
+        syllabusSection = [
+          "",
+          "SYLLABUS / CURRICULUM TEXT EXTRACTED FROM UPLOADED DOCUMENT:",
+          extractedText,
+          "",
+          "INSTRUCTIONS FOR SYLLABUS:",
+          "- The creator uploaded a syllabus document for this educational video.",
+          "- Use specific topics, chapters, subject codes, and keywords from this syllabus to inform the SEO tags, title, and description.",
+        ].join("\n");
+      }
+    }
+
     const userPrompt = [
       `VIDEO TOPIC / DESCRIPTION: "${(videoTopic || "").trim()}"`,
       `TARGET AUDIENCE: "${audience?.trim() || "General YouTube viewers in India"}"`,
@@ -104,6 +121,7 @@ export async function POST(request) {
       videosSection,
       defaultLinksSection,
       transcriptSection,
+      syllabusSection,
       "",
       "Generate a complete, maximum-impact YouTube SEO package. Return ONLY this exact JSON:",
       "{",
