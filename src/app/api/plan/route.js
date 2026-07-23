@@ -373,6 +373,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
       "QUALITY: Photorealistic, 4K magazine-cover grade, hyper-engaging. " +
       "Make it visually irresistible so viewers instantly want to click and see what happened."
     );
+  }
   if (creatorType === "gaming") {
     return (
       "Generate a COMPLETE, explosive Gaming YouTube thumbnail image. Every element described below must appear " +
