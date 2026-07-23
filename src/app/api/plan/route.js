@@ -36,11 +36,11 @@ export async function POST(request) {
 
     /* ── Live DeepSeek call ─────────────────────────────────────── */
     const subjectInstruction = hasSubjectPhoto
-      ? `Real reference photo(s) of ${subjectCount > 1 ? subjectCount + " creators" : "the creator"} will be sent to the image model. Pose mode: "${poseMode}" — ${
+      ? `Multi-angle reference photo(s) (Front view, Left profile, Right profile) of the creator will be sent to the image model. Pose mode: "${poseMode}" — ${
           poseMode === "ai"
             ? "choose the most impactful pose (pointing up, shocked, excited, authoritative)"
             : "keep their exact pose from the reference photo(s)"
-        }.`
+        }. Reconstruct their exact 3D facial likeness, skin tone, and features with 100% precision.`
       : "No subject photo. Image model will create a compelling Indian educator/presenter character.";
 
     const isSecondPass = videoTopic.includes("Additional details provided by creator:");
@@ -263,7 +263,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
   const dynamicPose = plan.subjectPose || "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression";
 
   const subjectNote = hasSubjectPhoto
-    ? `SUBJECT PHOTO(S) PROVIDED: Use the exact face, skin tone, and likeness for the ${subjectCount} person/people provided — preserve their identity completely. ` +
+    ? `MULTI-ANGLE FACE REFERENCE PROVIDED: The reference photo contains multi-angle facial reference shots (Front view, Left profile, Right profile) of the creator. Use these 3D facial angle references to reconstruct their exact face, facial structure, skin tone, and likeness with 100% precision. ` +
       (poseMode === "ai"
         ? `Give them the most expressive, dynamic pose based on this instruction: "${dynamicPose}". Dramatic cinematic rim lighting in the brand color.`
         : "Keep their exact pose from the reference photo(s). Dramatically enhance the lighting, styling, and background.")
