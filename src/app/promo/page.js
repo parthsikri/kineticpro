@@ -38,11 +38,30 @@ export default function PromoPage() {
   const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
-    // Simple countdown logic
+    let initialUpdate;
+    const savedEndTime = localStorage.getItem("kinetic_promo_end");
+    if (savedEndTime) {
+      const remaining = Math.max(0, Math.floor((parseInt(savedEndTime) - Date.now()) / 1000));
+      initialUpdate = setTimeout(() => setTimeLeft(remaining), 0);
+    } else {
+      const endTime = Date.now() + 45 * 60 * 1000;
+      localStorage.setItem("kinetic_promo_end", endTime.toString());
+    }
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
-    return () => clearInterval(timer);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(initialUpdate);
+    };
   }, []);
 
   const minutes = Math.floor(timeLeft / 60);
