@@ -38,7 +38,7 @@ export default function PricingPage() {
       return { disabled: true, text: "Included in Current Plan" };
     }
     
-    return { disabled: false, text: `Upgrade to ${tierName.charAt(0).toUpperCase() + tierName.slice(1)}` };
+    return { disabled: false, text: "Buy Now" };
   };
 
   return (

@@ -112,7 +112,8 @@ export default function PromoPage() {
               <h3 className="text-xl font-bold text-white mb-1">Kinetic Pro</h3>
               <p className="text-muted text-xs mb-6">Perfect for 1-2 videos a week.</p>
               
-              <div className="flex items-end gap-1 mb-8">
+              <div className="flex items-end gap-2 mb-8">
+                <span className="text-lg font-bold text-muted line-through decoration-red-500/50 mb-0.5">₹399</span>
                 <span className="text-3xl font-bold text-white">₹199</span>
                 <span className="text-muted text-sm pb-1">/ mo</span>
               </div>
@@ -131,6 +132,10 @@ export default function PromoPage() {
                   <span>Perfect Face Preservation</span>
                 </div>
               </div>
+              
+              <Link href="/register" className="mt-8 w-full block text-center bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm">
+                Buy Now
+              </Link>
             </div>
 
             {/* Elite Plan */}
@@ -141,7 +146,8 @@ export default function PromoPage() {
               <h3 className="text-xl font-bold text-gold mb-1">Kinetic Elite</h3>
               <p className="text-muted text-xs mb-6">For serious daily uploaders.</p>
               
-              <div className="flex items-end gap-1 mb-8">
+              <div className="flex items-end gap-2 mb-8">
+                <span className="text-lg font-bold text-muted line-through decoration-red-500/50 mb-0.5">₹599</span>
                 <span className="text-3xl font-bold text-white">₹299</span>
                 <span className="text-muted text-sm pb-1">/ mo</span>
               </div>
@@ -164,6 +170,10 @@ export default function PromoPage() {
                   <span>Auto-Scrape Related Videos</span>
                 </div>
               </div>
+              
+              <Link href="/register" className="mt-8 w-full block text-center bg-gold hover:bg-gold-hover text-black font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(207,161,95,0.4)]">
+                Buy Now
+              </Link>
             </div>
 
             {/* Infinity Plan */}
@@ -171,7 +181,8 @@ export default function PromoPage() {
               <h3 className="text-xl font-bold text-purple-400 mb-1">Kinetic Infinity</h3>
               <p className="text-muted text-xs mb-6">The unrestricted powerhouse.</p>
               
-              <div className="flex items-end gap-1 mb-8">
+              <div className="flex items-end gap-2 mb-8">
+                <span className="text-lg font-bold text-muted line-through decoration-red-500/50 mb-0.5">₹799</span>
                 <span className="text-3xl font-bold text-white">₹399</span>
                 <span className="text-muted text-sm pb-1">/ mo</span>
               </div>
@@ -194,6 +205,10 @@ export default function PromoPage() {
                   <span>Everything in Elite</span>
                 </div>
               </div>
+
+              <Link href="/register" className="mt-8 w-full block text-center bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-lg shadow-purple-500/20">
+                Buy Now
+              </Link>
             </div>
 
           </div>
