@@ -73,8 +73,11 @@ export async function POST(request) {
       try {
         const channelId = await getChannelId(activeChannelUrl);
         if (channelId) {
-          const videos = await getRecentVideos(channelId);
-          const playlists = await getPlaylists(activeChannelUrl);
+          // Run both fetches concurrently to save time (prevents Vercel timeout)
+          const [videos, playlists] = await Promise.all([
+            getRecentVideos(channelId),
+            getPlaylists(activeChannelUrl).catch(() => []) // Catch individual failures
+          ]);
           
           if (videos.length > 0 || playlists.length > 0) {
             videosSection = [
@@ -84,7 +87,8 @@ export async function POST(request) {
               "Playlists: " + JSON.stringify(playlists.slice(0, 10)),
               "",
               "INSTRUCTION FOR RELATED CONTENT:",
-              "- Select 2 to 3 most relevant or contextually helpful videos OR playlists from the lists above.",
+              "- Select up to 3 most relevant or contextually helpful videos OR playlists from the lists above.",
+              "- If none are highly relevant, you can select fewer or omit this section entirely.",
               "- Embed them under a dedicated section inside the description called 'Recommended to Watch next:'.",
               "- Show each selected item's exact title and its exact watch/playlist link (url) from the list above. Do NOT modify or hallucinate the URLs.",
               "- Place this section right before the CTA/social links at the bottom.",
@@ -230,7 +234,8 @@ async function getChannelId(channelUrlOrHandle) {
   const response = await fetch(`https://www.youtube.com/${handle}`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
+    },
+    signal: AbortSignal.timeout(4000)
   });
   if (!response.ok) return null;
   const html = await response.text();
@@ -245,7 +250,9 @@ async function getChannelId(channelUrlOrHandle) {
 }
 
 async function getRecentVideos(channelId) {
-  const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+  const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, {
+    signal: AbortSignal.timeout(3000)
+  });
   if (!response.ok) return [];
   const xml = await response.text();
   
@@ -277,7 +284,8 @@ async function getPlaylists(channelUrl) {
   const response = await fetch(`https://www.youtube.com/${handle}/playlists`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
+    },
+    signal: AbortSignal.timeout(4000) // 4 second timeout to prevent Vercel crashes
   });
   if (!response.ok) return [];
   const html = await response.text();
