@@ -147,7 +147,7 @@ export async function POST(request) {
       '    "Title 3: Under 60 characters — question or listicle format"' +
       "  ],",
       '  "description": "Full 5-paragraph SEO description (minimum 350 words). Para 1: Powerful 2-sentence hook with primary keywords. Para 2-3: Detailed value breakdown covering key concepts and search intent naturally. Para 4: Strong CTA (like, subscribe, comment). Para 5: Social links / chapter note placeholder. Use \\n\\n between paragraphs. Include 3-4 relevant emojis. Language: ' + lang + '",',
-      '  "tags": ["tag1", "tag2", "...The BEST hyper-relevant, high-ranking tags to rank this video. The total character count of all tags combined (including commas) MUST NOT EXCEED 500 characters. Prioritize quality over quantity."],',
+      '  "tags": ["primary keyword", "high volume tag", "...The 15-20 BEST hyper-relevant, highest-search-volume tags to rank this video. NO FLUFF. The total character count of all tags combined (including commas) MUST NOT EXCEED 500 characters. Quality and high search volume over quantity!"],',
       '  "hashtags": ["#hashtag1", "...exactly 8 trending hashtags"],',
       '  "chapters": [',
       '    { "time": "0:00", "title": "Introduction" },',
@@ -175,7 +175,7 @@ export async function POST(request) {
       "STRICT RULES:",
       "- EVERY title in the 'titles' array MUST BE STRICTLY UNDER 60 CHARACTERS.",
       "- titles must be in " + lang + " — highly engaging and natural",
-      "- tags: MUST BE STRICTLY UNDER 500 CHARACTERS TOTAL when combined with commas. Only include the most powerful ranking tags.",
+      "- tags: Think like a master YouTube SEO expert. MUST BE STRICTLY UNDER 500 CHARACTERS TOTAL when combined with commas. Only include the most powerful, high search volume ranking tags.",
       "- description: MUST be minimum 350 words, rich with natural search keywords",
     ].join("\n");
 
@@ -210,6 +210,23 @@ export async function POST(request) {
     const cleaned = rawText.substring(firstBrace, lastBrace + 1);
 
     const seo = JSON.parse(cleaned);
+
+    // Enforce 500 character limit on tags strictly (including commas)
+    if (seo.tags && Array.isArray(seo.tags)) {
+      let currentLen = 0;
+      const validTags = [];
+      for (const tag of seo.tags) {
+        const tagLen = tag.length + (validTags.length > 0 ? 1 : 0); // +1 for comma if not first
+        if (currentLen + tagLen <= 495) { // using 495 for a small safety margin
+          validTags.push(tag);
+          currentLen += tagLen;
+        } else {
+          break;
+        }
+      }
+      seo.tags = validTags;
+    }
+
     return NextResponse.json({ success: true, seo });
 
   } catch (error) {
