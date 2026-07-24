@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Info, CheckCircle2, Sparkles, UserCheck, Video, GraduationCap, Laptop, Gamepad2, TrendingUp, Dumbbell, Save } from "lucide-react";
+import { Info, CheckCircle2, Sparkles, UserCheck, Video, GraduationCap, Laptop, Gamepad2, TrendingUp, Dumbbell, Save, Link2 } from "lucide-react";
 
 const CREATOR_TYPES = [
   {
@@ -63,6 +63,8 @@ const CREATOR_TYPES = [
 export default function MoreInfoPage() {
   const [selectedType, setSelectedType] = useState("education");
   const [savedType, setSavedType]       = useState("education");
+  const [defaultLinks, setDefaultLinks] = useState("");
+  const [savedLinks, setSavedLinks]     = useState("");
   const [saving, setSaving]             = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loading, setLoading]           = useState(true);
@@ -82,6 +84,10 @@ export default function MoreInfoPage() {
         if (data.success && data.creatorType) {
           setSelectedType(data.creatorType);
           setSavedType(data.creatorType);
+          if (data.defaultLinks) {
+            setDefaultLinks(data.defaultLinks);
+            setSavedLinks(data.defaultLinks);
+          }
           localStorage.setItem("kinetic_creator_type", data.creatorType);
         }
       } catch (err) {
@@ -106,12 +112,13 @@ export default function MoreInfoPage() {
       const res = await fetch("/api/user/creator-type", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creatorType: selectedType }),
+        body: JSON.stringify({ creatorType: selectedType, defaultLinks }),
       });
 
       const data = await res.json();
       if (data.success) {
         setSavedType(selectedType);
+        setSavedLinks(defaultLinks);
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 3000);
       } else {
@@ -219,6 +226,27 @@ export default function MoreInfoPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Default Promotional Links */}
+      <div className="bg-charcoal border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-gold" /> Custom Promotional Links
+          </h2>
+          <span className="text-xs text-muted">Auto-appended to SEO descriptions</span>
+        </div>
+        <p className="text-[11px] text-muted max-w-2xl">
+          Store your social media profiles, app download links, affiliate links, or any other promotional URLs here. 
+          When generating a new SEO package, Kinetic will automatically embed these exact links at the bottom of the YouTube description.
+        </p>
+        <textarea
+          rows={5}
+          value={defaultLinks}
+          onChange={(e) => setDefaultLinks(e.target.value)}
+          placeholder="e.g.&#10;Follow me on Instagram: https://instagram.com/...&#10;Download our App: https://play.google.com/..."
+          className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all resize-none"
+        />
       </div>
 
       {/* Save Action */}

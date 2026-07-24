@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "../../../lib/auth";
+import { prisma } from "../../../lib/prisma";
 import { extractTextFromDocument } from "../../../lib/visionExtraction";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,14 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, audience, language, outline, channelUrl, defaultLinks, pastedTranscript, syllabusFile } = body;
+    const { videoTopic, audience, language, outline, channelUrl, defaultLinks: bodyDefaultLinks, pastedTranscript, syllabusFile } = body;
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { defaultLinks: true },
+    });
+    
+    const defaultLinks = bodyDefaultLinks || dbUser?.defaultLinks || "";
 
     const transcriptText = pastedTranscript?.trim() || "";
 

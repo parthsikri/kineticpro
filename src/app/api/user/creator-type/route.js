@@ -13,12 +13,13 @@ export async function GET() {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { creatorType: true },
+      select: { creatorType: true, defaultLinks: true },
     });
 
     return NextResponse.json({
       success: true,
       creatorType: dbUser?.creatorType || "education",
+      defaultLinks: dbUser?.defaultLinks || "",
     });
   } catch (error) {
     console.error("GET Creator Type Error:", error);
@@ -34,7 +35,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { creatorType } = body;
+    const { creatorType, defaultLinks } = body;
 
     if (!creatorType || !ALLOWED_TYPES.includes(creatorType)) {
       return NextResponse.json(
@@ -45,13 +46,14 @@ export async function POST(request) {
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { creatorType },
-      select: { creatorType: true },
+      data: { creatorType, defaultLinks: defaultLinks ?? undefined },
+      select: { creatorType: true, defaultLinks: true },
     });
 
     return NextResponse.json({
       success: true,
       creatorType: updatedUser.creatorType,
+      defaultLinks: updatedUser.defaultLinks,
     });
   } catch (error) {
     console.error("POST Creator Type Error:", error);
