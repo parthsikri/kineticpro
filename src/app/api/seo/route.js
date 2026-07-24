@@ -147,7 +147,7 @@ export async function POST(request) {
       '    "Title 3: Under 60 characters — question or listicle format"' +
       "  ],",
       '  "description": "Full 5-paragraph SEO description (minimum 350 words). Para 1: Powerful 2-sentence hook with primary keywords. Para 2-3: Detailed value breakdown covering key concepts and search intent naturally. Para 4: Strong CTA (like, subscribe, comment). Para 5: Social links / chapter note placeholder. Use \\n\\n between paragraphs. Include 3-4 relevant emojis. Language: ' + lang + '",',
-      '  "tags": ["tag1", "tag2", "...EXACTLY 40 high-volume search tags — mix of broad, specific, long-tail, and transliterated Hinglish/English terms"],',
+      '  "tags": ["tag1", "tag2", "...The BEST hyper-relevant, high-ranking tags to rank this video. The total character count of all tags combined (including commas) MUST NOT EXCEED 500 characters. Prioritize quality over quantity."],',
       '  "hashtags": ["#hashtag1", "...exactly 8 trending hashtags"],',
       '  "chapters": [',
       '    { "time": "0:00", "title": "Introduction" },',
@@ -175,7 +175,7 @@ export async function POST(request) {
       "STRICT RULES:",
       "- EVERY title in the 'titles' array MUST BE STRICTLY UNDER 60 CHARACTERS.",
       "- titles must be in " + lang + " — highly engaging and natural",
-      "- tags: exactly 40 distinct tags, no plain duplicates",
+      "- tags: MUST BE STRICTLY UNDER 500 CHARACTERS TOTAL when combined with commas. Only include the most powerful ranking tags.",
       "- description: MUST be minimum 350 words, rich with natural search keywords",
     ].join("\n");
 
