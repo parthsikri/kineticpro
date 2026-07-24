@@ -67,7 +67,10 @@ export default function MoreInfoPage() {
   const [savedLinks, setSavedLinks]     = useState("");
   const [channelUrl, setChannelUrl]     = useState("");
   const [savedChannel, setSavedChannel] = useState("");
+  const [logoUrl, setLogoUrl]           = useState("");
+  const [savedLogo, setSavedLogo]       = useState("");
   const [saving, setSaving]             = useState(false);
+  const [uploadingLogo, setUploadingLogo]= useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loading, setLoading]           = useState(true);
 
@@ -94,6 +97,10 @@ export default function MoreInfoPage() {
             setChannelUrl(data.youtubeChannelUrl);
             setSavedChannel(data.youtubeChannelUrl);
           }
+          if (data.logoUrl) {
+            setLogoUrl(data.logoUrl);
+            setSavedLogo(data.logoUrl);
+          }
           localStorage.setItem("kinetic_creator_type", data.creatorType);
         }
       } catch (err) {
@@ -106,22 +113,46 @@ export default function MoreInfoPage() {
     fetchCreatorType();
   }, []);
 
-  const handleSave = async () => {
-    setSaving(true);
-    setSavedSuccess(false);
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     try {
-      // Save locally instantly
-      localStorage.setItem("kinetic_creator_type", selectedType);
+      setUploadingLogo(true);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result;
+        const res = await fetch("/api/assets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64 }),
+        });
+        const data = await res.json();
+        if (data.success && data.image?.url) {
+          setLogoUrl(data.image.url);
+        } else {
+          console.error("Logo upload failed", data.error);
+        }
+        setUploadingLogo(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      setUploadingLogo(false);
+    }
+  };
 
-      // Save to backend DB
+  const handleSave = async () => {
+    try {
+      setSaving(true);
       const res = await fetch("/api/user/creator-type", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           creatorType: selectedType, 
           defaultLinks: defaultLinks,
-          youtubeChannelUrl: channelUrl
+          youtubeChannelUrl: channelUrl,
+          logoUrl: logoUrl
         }),
       });
 
@@ -130,6 +161,7 @@ export default function MoreInfoPage() {
         setSavedType(data.creatorType);
         setSavedLinks(data.defaultLinks || "");
         setSavedChannel(data.youtubeChannelUrl || "");
+        setSavedLogo(data.logoUrl || "");
         localStorage.setItem("kinetic_creator_type", data.creatorType);
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 3000);
@@ -279,6 +311,47 @@ export default function MoreInfoPage() {
           value={channelUrl}
           onChange={(e) => setChannelUrl(e.target.value)}
         />
+      </div>
+
+      {/* Brand Logo Upload Section */}
+      <div className="bg-charcoal border border-border rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" /> Channel Logo
+            </h2>
+            <span className="text-xs text-muted">For future thumbnail overlays</span>
+          </div>
+          <p className="text-[11px] text-muted max-w-2xl">
+            Upload your transparent channel logo. We will use this in the future to automatically watermark your generated thumbnails.
+          </p>
+          
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 rounded-2xl bg-black/50 border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden relative">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <UserCheck className="w-8 h-8 text-white/20" />
+              )}
+              {uploadingLogo && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <label className="premium-btn py-2 px-6 text-xs inline-block cursor-pointer">
+                Upload New Logo
+                <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+              </label>
+              <p className="text-[10px] text-muted">PNG or WebP with transparent background recommended. Max 2MB.</p>
+              {logoUrl && (
+                <button onClick={() => setLogoUrl("")} className="text-xs text-red-400 hover:text-red-300 block mt-2">
+                  Remove Logo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Save Action */}

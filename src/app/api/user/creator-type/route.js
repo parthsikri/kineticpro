@@ -13,7 +13,7 @@ export async function GET() {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true },
+      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true, logoUrl: true },
     });
 
     return NextResponse.json({
@@ -21,6 +21,7 @@ export async function GET() {
       creatorType: dbUser?.creatorType || "education",
       defaultLinks: dbUser?.defaultLinks || "",
       youtubeChannelUrl: dbUser?.youtubeChannelUrl || "",
+      logoUrl: dbUser?.logoUrl || "",
     });
   } catch (error) {
     console.error("GET Creator Type Error:", error);
@@ -36,7 +37,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { creatorType, defaultLinks, youtubeChannelUrl } = body;
+    const { creatorType, defaultLinks, youtubeChannelUrl, logoUrl } = body;
 
     if (!creatorType || !ALLOWED_TYPES.includes(creatorType)) {
       return NextResponse.json(
@@ -50,9 +51,10 @@ export async function POST(request) {
       data: { 
         creatorType, 
         defaultLinks: defaultLinks ?? undefined,
-        youtubeChannelUrl: youtubeChannelUrl ?? undefined
+        youtubeChannelUrl: youtubeChannelUrl ?? undefined,
+        logoUrl: logoUrl ?? undefined
       },
-      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true },
+      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true, logoUrl: true },
     });
 
     return NextResponse.json({
@@ -60,6 +62,7 @@ export async function POST(request) {
       creatorType: updatedUser.creatorType,
       defaultLinks: updatedUser.defaultLinks,
       youtubeChannelUrl: updatedUser.youtubeChannelUrl,
+      logoUrl: updatedUser.logoUrl,
     });
   } catch (error) {
     console.error("POST Creator Type Error:", error);
