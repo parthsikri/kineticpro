@@ -26,7 +26,9 @@ export async function GET(req) {
     const state = searchParams.get("state");
     const cookieStore = await cookies();
     const expectedState = cookieStore.get("oauth_state")?.value;
+    const authRedirect = cookieStore.get("auth_redirect")?.value;
     cookieStore.delete("oauth_state");
+    cookieStore.delete("auth_redirect");
 
     if (error || !code || !stateMatches(state, expectedState)) {
       return NextResponse.redirect(`${domain}/login?error=${encodeURIComponent(error || "Google auth failed")}`);
@@ -94,8 +96,8 @@ export async function GET(req) {
     // Create session and set cookie
     await createSession(user.id);
 
-    // Redirect to dashboard
-    return NextResponse.redirect(`${domain}/dashboard`);
+    // Redirect to dashboard or custom destination
+    return NextResponse.redirect(`${domain}${authRedirect || "/dashboard"}`);
   } catch (err) {
     console.error("[GOOGLE_AUTH_CALLBACK_ERROR]", err);
     return NextResponse.redirect(`${domain}/login?error=Internal+Server+Error`);

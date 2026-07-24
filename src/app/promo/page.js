@@ -130,7 +130,7 @@ export default function PromoPage() {
           <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success" /> 10x Your CTR</div>
         </div>
         
-        <Link href="#pricing" className="bg-gold hover:bg-gold-hover text-black font-bold py-4 px-10 rounded-xl text-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(207,161,95,0.4)]">
+        <Link href="/register?redirect=/dashboard/pricing" className="bg-gold hover:bg-gold-hover text-black font-bold py-4 px-10 rounded-xl text-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(207,161,95,0.4)]">
           Claim 50% Off Now <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
@@ -239,7 +239,7 @@ export default function PromoPage() {
               </div>
             </div>
             
-            <Link href="/register" className="mt-8 w-full block text-center bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm">
+            <Link href="/register?redirect=/dashboard/pricing" className="mt-8 w-full block text-center bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm">
               Buy Now
             </Link>
           </div>
@@ -277,7 +277,7 @@ export default function PromoPage() {
               </div>
             </div>
             
-            <Link href="/register" className="mt-8 w-full block text-center bg-gold hover:bg-gold-hover text-black font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(207,161,95,0.4)]">
+            <Link href="/register?redirect=/dashboard/pricing" className="mt-8 w-full block text-center bg-gold hover:bg-gold-hover text-black font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(207,161,95,0.4)]">
               Buy Now
             </Link>
           </div>
@@ -312,7 +312,7 @@ export default function PromoPage() {
               </div>
             </div>
 
-            <Link href="/register" className="mt-8 w-full block text-center bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-lg shadow-purple-500/20">
+            <Link href="/register?redirect=/dashboard/pricing" className="mt-8 w-full block text-center bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-sm shadow-lg shadow-purple-500/20">
               Buy Now
             </Link>
           </div>

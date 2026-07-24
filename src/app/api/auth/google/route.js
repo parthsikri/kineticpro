@@ -24,6 +24,18 @@ export async function GET(req) {
   authUrl.searchParams.append("state", state);
 
   const response = NextResponse.redirect(authUrl.toString());
+  
+  const redirectParam = req.nextUrl.searchParams.get("redirect");
+  if (redirectParam) {
+    response.cookies.set("auth_redirect", redirectParam, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 10 * 60,
+      path: "/api/auth/callback/google",
+    });
+  }
+
   response.cookies.set("oauth_state", state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

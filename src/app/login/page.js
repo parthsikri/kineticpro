@@ -11,10 +11,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
+      const redir = urlParams.get("redirect");
+      if (redir) setRedirectUrl(redir);
       const err = urlParams.get("error");
       if (err) {
         const timer = setTimeout(() => setError(err), 0);
@@ -41,7 +44,7 @@ export default function LoginPage() {
         throw new Error(data.error || "Invalid credentials");
       }
 
-      router.push("/dashboard");
+      router.push(redirectUrl || "/dashboard");
       router.refresh();
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -124,7 +127,7 @@ export default function LoginPage() {
 
         {/* Google OAuth Button */}
         <Link
-          href="/api/auth/google"
+          href={`/api/auth/google${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
           className="w-full py-3.5 rounded-xl border border-white/10 hover:border-white/30 bg-black/40 hover:bg-black/80 text-off-white hover:text-white transition-all flex items-center justify-center gap-3 text-sm font-semibold cursor-pointer"
         >
           {/* Custom SVG Google Icon */}
