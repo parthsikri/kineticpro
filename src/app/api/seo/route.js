@@ -17,7 +17,7 @@ export async function POST(request) {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { defaultLinks: true, youtubeChannelUrl: true },
+      select: { defaultLinks: true, youtubeChannelUrl: true, subscriptionStatus: true, subscriptionTier: true },
     });
     
     const defaultLinks = bodyDefaultLinks || dbUser?.defaultLinks || "";
@@ -64,12 +64,19 @@ export async function POST(request) {
     ].join("\n");
 
     const lang = language || "Hinglish";
-    const chapterInstruction = outline?.trim()
-      ? `Generate chapters based on this outline: "${outline.trim()}"`
-      : "Generate 7-9 logical chapters that make sense for this topic. Space them realistically (first at 0:00, rest 2-5 minutes apart).";
+    
+    const isActive = dbUser?.subscriptionStatus === "active";
+    const isEliteOrHigher = isActive && (dbUser?.subscriptionTier === "elite" || dbUser?.subscriptionTier === "infinity");
+    const isInfinity = isActive && dbUser?.subscriptionTier === "infinity";
+
+    const chapterInstruction = isInfinity
+      ? (outline?.trim()
+        ? `Generate detailed chapters based on this outline: "${outline.trim()}"`
+        : "Generate 7-9 highly detailed logical chapters to maximize SEO retention (first at 0:00).")
+      : "DO NOT GENERATE ANY CHAPTERS. Leave the 'chapters' array completely empty: []. (The user's current tier does not support chapters).";
 
     let videosSection = "";
-    if (activeChannelUrl) {
+    if (activeChannelUrl && isEliteOrHigher) {
       try {
         const channelId = await getChannelId(activeChannelUrl);
         if (channelId) {

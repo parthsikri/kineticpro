@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Script from "next/script";
 
-export default function UpgradeButton({ className = "", tier = "pro", children }) {
+export default function UpgradeButton({ className = "", tier = "pro", interval = "monthly", children }) {
   const [loading, setLoading] = useState(false);
 
   const handleUpgrade = async () => {
@@ -14,7 +14,7 @@ export default function UpgradeButton({ className = "", tier = "pro", children }
       const res = await fetch("/api/checkout", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier })
+        body: JSON.stringify({ tier, interval })
       });
       const data = await res.json();
 
@@ -29,8 +29,8 @@ export default function UpgradeButton({ className = "", tier = "pro", children }
         key: data.order.key_id,
         amount: data.order.amount,
         currency: data.order.currency,
-        name: tier === "elite" ? "Kinetic Elite" : "Kinetic Pro",
-        description: tier === "elite" ? "Elite A/B Testing Tier" : "21 AI Thumbnail Generations / Week",
+        name: `Kinetic ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
+        description: `Kinetic ${tier.charAt(0).toUpperCase() + tier.slice(1)} (${interval})`,
         order_id: data.order.id,
         handler: async function (response) {
           // 3. Verify Signature

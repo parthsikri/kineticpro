@@ -99,86 +99,114 @@ export default function PromoPage() {
         </div>
 
         {/* Plan Comparison Section */}
-        <div className="w-full max-w-4xl mx-auto mt-24 mb-16">
+        <div className="w-full max-w-6xl mx-auto mt-24 mb-16">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white mb-4">Why upgrade to Pro?</h2>
-            <p className="text-muted text-sm max-w-lg mx-auto">Stop leaving views on the table. The Free plan is great for testing, but Pro gives you the unrestricted horsepower needed to go viral.</p>
+            <h2 className="text-3xl font-bold text-white mb-4">Choose your Kinetic Power.</h2>
+            <p className="text-muted text-sm max-w-lg mx-auto">Stop leaving views on the table. Generate unlimited variations until you find the perfect viral thumbnail.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            {/* Free Plan */}
-            <div className="bg-charcoal/50 border border-white/5 rounded-3xl p-8 flex flex-col backdrop-blur-sm">
-              <h3 className="text-xl font-bold text-white mb-1">Free Tier</h3>
-              <p className="text-muted text-xs mb-6">Basic capabilities</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch text-left">
+            
+            {/* Pro Plan */}
+            <div className="bg-charcoal/50 border border-white/5 rounded-3xl p-8 flex flex-col backdrop-blur-sm group hover:border-white/20 transition-colors">
+              <h3 className="text-xl font-bold text-white mb-1">Kinetic Pro</h3>
+              <p className="text-muted text-xs mb-6">Perfect for 1-2 videos a week.</p>
+              
+              <div className="flex items-end gap-1 mb-8">
+                <span className="text-3xl font-bold text-white">₹199</span>
+                <span className="text-muted text-sm pb-1">/ mo</span>
+              </div>
               
               <div className="space-y-4 flex-1">
-                <div className="flex items-center gap-3 text-sm text-white/70">
-                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
-                  Strictly limited thumbnail generations
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                  <span><strong>10 AI Thumbnails</strong> per month</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-white/70">
-                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
-                  Basic background removal only
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                  <span>Standard Quality Export</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-white/70">
-                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
-                  Generic SEO tags
-                </div>
-                <div className="flex items-center gap-3 text-sm text-white/70">
-                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
-                  Watermarked downloads
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                  <span>Perfect Face Preservation</span>
                 </div>
               </div>
             </div>
 
-            {/* Pro Plan */}
+            {/* Elite Plan */}
             <div className="bg-gradient-to-b from-charcoal to-black border-2 border-gold/40 rounded-3xl p-8 flex flex-col relative shadow-[0_0_30px_rgba(207,161,95,0.15)] transform md:-translate-y-4">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold text-black text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold text-black text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full whitespace-nowrap">
                 Most Popular
               </div>
-              <h3 className="text-xl font-bold text-gold mb-1">Kinetic Pro</h3>
-              <p className="text-muted text-xs mb-6">For serious creators</p>
+              <h3 className="text-xl font-bold text-gold mb-1">Kinetic Elite</h3>
+              <p className="text-muted text-xs mb-6">For serious daily uploaders.</p>
               
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center gap-3 text-sm text-white font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
-                  Unlimited Ultra-HD Thumbnail Generation
-                </div>
-                <div className="flex items-center gap-3 text-sm text-white font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
-                  Advanced Face & Emotion Replication
-                </div>
-                <div className="flex items-center gap-3 text-sm text-white font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
-                  Maximum Impact SEO (Titles, Tags, Chapters)
-                </div>
-                <div className="flex items-center gap-3 text-sm text-white font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
-                  Auto-scrape YouTube Playlists & Videos
-                </div>
-                <div className="flex items-center gap-3 text-sm text-white font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
-                  Zero Watermarks, 100% Commercial Rights
-                </div>
+              <div className="flex items-end gap-1 mb-8">
+                <span className="text-3xl font-bold text-white">₹299</span>
+                <span className="text-muted text-sm pb-1">/ mo</span>
               </div>
               
-              <div className="mt-8 pt-6 border-t border-white/10 text-center">
-                <div className="flex items-end justify-center gap-1 mb-1">
-                  <span className="text-4xl font-black text-white">₹299</span>
-                  <span className="text-muted font-medium mb-1">/ mo</span>
+              <div className="space-y-4 flex-1">
+                <div className="flex items-start gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0 mt-0.5" />
+                  <span><strong>30 AI Thumbnails</strong> per month</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0 mt-0.5" />
+                  <span>A/B Testing Mode (2 Variants)</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0 mt-0.5" />
+                  <span>Maximum Impact SEO Generator</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0 mt-0.5" />
+                  <span>Auto-Scrape Related Videos</span>
                 </div>
               </div>
             </div>
+
+            {/* Infinity Plan */}
+            <div className="bg-charcoal/50 border border-purple-500/30 rounded-3xl p-8 flex flex-col backdrop-blur-sm group hover:border-purple-500 transition-colors shadow-2xl shadow-purple-500/10">
+              <h3 className="text-xl font-bold text-purple-400 mb-1">Kinetic Infinity</h3>
+              <p className="text-muted text-xs mb-6">The unrestricted powerhouse.</p>
+              
+              <div className="flex items-end gap-1 mb-8">
+                <span className="text-3xl font-bold text-white">₹399</span>
+                <span className="text-muted text-sm pb-1">/ mo</span>
+              </div>
+              
+              <div className="space-y-4 flex-1">
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <span><strong>90 AI Thumbnails</strong> per month</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <span>Premium Quality Export (Best Model)</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <span>Automatic Chapter Maker (SEO)</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm text-white/90">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                  <span>Everything in Elite</span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
         {/* Call to Action Box */}
         <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 rounded-3xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center mt-8">
           <h2 className="text-2xl font-bold text-white mb-2">Unlock Kinetic Pro</h2>
-          <p className="text-muted text-sm mb-6">Unlimited AI Thumbnails & SEO Generation.</p>
+          <p className="text-muted text-sm mb-6">Unleash AI Thumbnails & SEO Generation.</p>
           
           <div className="flex items-end gap-2 mb-8">
-            <span className="text-5xl font-black text-white">₹299</span>
+            <span className="text-muted text-lg line-through decoration-red-500/50 mb-1">₹399</span>
+            <span className="text-5xl font-black text-white">₹199</span>
             <span className="text-muted font-medium mb-1">/ month</span>
           </div>
 

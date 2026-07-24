@@ -14,6 +14,7 @@ async function reserveCredits(userId) {
 
   const isPro = user.subscriptionStatus === "active";
   const isElite = isPro && user.subscriptionTier === "elite";
+  const isInfinity = isPro && user.subscriptionTier === "infinity";
 
   // Check subscription has not expired
   if (isPro && user.subscriptionExpiresAt && new Date() > user.subscriptionExpiresAt) {
@@ -25,26 +26,26 @@ async function reserveCredits(userId) {
     throw new CreditError("Your subscription has expired. Please renew to continue generating.");
   }
 
-  const planKey = isElite ? "elite" : "pro";
+  const planKey = isInfinity ? "infinity" : isElite ? "elite" : "pro";
   const plan = PLANS[planKey];
   // Each generation run consumes 1 slot regardless of variant count
-  const weeklySlotCost = 1;
+  const slotCost = 1;
   const numGenerations = isPro ? plan.generations : 1;
 
   if (isPro) {
     const now = new Date();
-    // Reset weekly counter if window has passed
+    // Reset monthly counter if window has passed
     await prisma.user.updateMany({
       where: { id: userId, subscriptionStatus: "active", OR: [{ proCreditsResetAt: null }, { proCreditsResetAt: { lte: now } }] },
-      data: { proCreditsUsed: 0, proCreditsResetAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) },
+      data: { proCreditsUsed: 0, proCreditsResetAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) },
     });
     // Atomically reserve one slot
-    const weeklyLimit = plan.weeklyLimit;
+    const monthlyLimit = plan.monthlyLimit;
     const reserved = await prisma.user.updateMany({
-      where: { id: userId, subscriptionStatus: "active", proCreditsUsed: { lte: weeklyLimit - weeklySlotCost } },
-      data: { proCreditsUsed: { increment: weeklySlotCost } },
+      where: { id: userId, subscriptionStatus: "active", proCreditsUsed: { lte: monthlyLimit - slotCost } },
+      data: { proCreditsUsed: { increment: slotCost } },
     });
-    if (reserved.count !== 1) throw new CreditError(`Weekly limit of ${weeklyLimit} thumbnails reached. Resets next week.`);
+    if (reserved.count !== 1) throw new CreditError(`Monthly limit of ${monthlyLimit} thumbnails reached. Resets next billing cycle.`);
   } else {
     const reserved = await prisma.user.updateMany({
       where: { id: userId, subscriptionStatus: { not: "active" }, credits: { gte: 1 } },
@@ -53,7 +54,7 @@ async function reserveCredits(userId) {
     if (reserved.count !== 1) throw new CreditError("Out of credits. Please upgrade to Pro.");
   }
 
-  return { isPro, isElite, numGenerations };
+  return { isPro, isElite, isInfinity, numGenerations };
 }
 
 async function refundCredits(userId, reservation) {
@@ -88,10 +89,11 @@ export async function POST(request) {
 
     // Reserve credits BEFORE any AI call — prevents concurrent bypass
     reservation = await reserveCredits(userId);
-    const { isElite, numGenerations } = reservation;
+    const { isElite, isInfinity, numGenerations } = reservation;
 
     const apiKey = process.env.OPENAI_API_KEY;
-    const modelName = process.env.IMAGE_MODEL_NAME || "gpt-image-2";
+    // Infinity gets the best model (dall-e-3), others get the standard (dall-e-2 or standard gpt-image)
+    const modelName = isInfinity ? "dall-e-3" : (process.env.IMAGE_MODEL_NAME || "dall-e-2");
 
     /* ── Mock fallback (no API key) — refund credits, no real work done ── */
     if (!apiKey) {
