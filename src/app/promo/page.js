@@ -4,14 +4,14 @@ import React from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
-// Using the generated thumbnails found in public/uploads/
+// Using the generated thumbnails found in public/demo-thumbs/ (tracked by git)
 const THUMBNAILS = [
-  "/uploads/thumb_1784128050347_m876rt.png",
-  "/uploads/thumb_1784128050406_c7w9wh.png",
-  "/uploads/thumb_1784128050430_1xyyk5.png",
-  "/uploads/thumb_1784128244614_kaw78v.png",
-  "/uploads/thumb_1784128244640_f4w110e.png",
-  "/uploads/thumb_1784128244686_vq58hn.png",
+  "/demo-thumbs/thumb_1784128050347_m876rt.png",
+  "/demo-thumbs/thumb_1784128050406_c7w9wh.png",
+  "/demo-thumbs/thumb_1784128050430_1xyyk5.png",
+  "/demo-thumbs/thumb_1784128244614_kaw78v.png",
+  "/demo-thumbs/thumb_1784128244640_f4w110e.png",
+  "/demo-thumbs/thumb_1784128244686_vq58hn.png",
 ];
 
 export default function PromoPage() {
@@ -98,8 +98,82 @@ export default function PromoPage() {
           </div>
         </div>
 
+        {/* Plan Comparison Section */}
+        <div className="w-full max-w-4xl mx-auto mt-24 mb-16">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-4">Why upgrade to Pro?</h2>
+            <p className="text-muted text-sm max-w-lg mx-auto">Stop leaving views on the table. The Free plan is great for testing, but Pro gives you the unrestricted horsepower needed to go viral.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            {/* Free Plan */}
+            <div className="bg-charcoal/50 border border-white/5 rounded-3xl p-8 flex flex-col backdrop-blur-sm">
+              <h3 className="text-xl font-bold text-white mb-1">Free Tier</h3>
+              <p className="text-muted text-xs mb-6">Basic capabilities</p>
+              
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
+                  Strictly limited thumbnail generations
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
+                  Basic background removal only
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
+                  Generic SEO tags
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white/70">
+                  <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">✕</span>
+                  Watermarked downloads
+                </div>
+              </div>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="bg-gradient-to-b from-charcoal to-black border-2 border-gold/40 rounded-3xl p-8 flex flex-col relative shadow-[0_0_30px_rgba(207,161,95,0.15)] transform md:-translate-y-4">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold text-black text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
+                Most Popular
+              </div>
+              <h3 className="text-xl font-bold text-gold mb-1">Kinetic Pro</h3>
+              <p className="text-muted text-xs mb-6">For serious creators</p>
+              
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
+                  Unlimited Ultra-HD Thumbnail Generation
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
+                  Advanced Face & Emotion Replication
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
+                  Maximum Impact SEO (Titles, Tags, Chapters)
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
+                  Auto-scrape YouTube Playlists & Videos
+                </div>
+                <div className="flex items-center gap-3 text-sm text-white font-medium">
+                  <CheckCircle2 className="w-5 h-5 text-gold shrink-0" />
+                  Zero Watermarks, 100% Commercial Rights
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                <div className="flex items-end justify-center gap-1 mb-1">
+                  <span className="text-4xl font-black text-white">₹299</span>
+                  <span className="text-muted font-medium mb-1">/ mo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Call to Action Box */}
-        <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 rounded-3xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center">
+        <div className="bg-black/70 border border-white/10 backdrop-blur-xl p-8 rounded-3xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center mt-8">
           <h2 className="text-2xl font-bold text-white mb-2">Unlock Kinetic Pro</h2>
           <p className="text-muted text-sm mb-6">Unlimited AI Thumbnails & SEO Generation.</p>
           
