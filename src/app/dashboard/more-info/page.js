@@ -352,7 +352,6 @@ export default function MoreInfoPage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Save Action */}
       <div className="bg-dark-gray border border-border rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
