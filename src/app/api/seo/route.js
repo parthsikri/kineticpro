@@ -17,10 +17,11 @@ export async function POST(request) {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { defaultLinks: true },
+      select: { defaultLinks: true, youtubeChannelUrl: true },
     });
     
     const defaultLinks = bodyDefaultLinks || dbUser?.defaultLinks || "";
+    const activeChannelUrl = channelUrl?.trim() || dbUser?.youtubeChannelUrl || "";
 
     const transcriptText = pastedTranscript?.trim() || "";
 
@@ -68,21 +69,24 @@ export async function POST(request) {
       : "Generate 7-9 logical chapters that make sense for this topic. Space them realistically (first at 0:00, rest 2-5 minutes apart).";
 
     let videosSection = "";
-    if (channelUrl?.trim()) {
+    if (activeChannelUrl) {
       try {
-        const channelId = await getChannelId(channelUrl);
+        const channelId = await getChannelId(activeChannelUrl);
         if (channelId) {
           const videos = await getRecentVideos(channelId);
-          if (videos.length > 0) {
+          const playlists = await getPlaylists(activeChannelUrl);
+          
+          if (videos.length > 0 || playlists.length > 0) {
             videosSection = [
               "",
-              "RELATED VIDEOS FROM THE CREATOR'S CHANNEL:",
-              JSON.stringify(videos.slice(0, 10)),
+              "RELATED VIDEOS & PLAYLISTS FROM THE CREATOR'S CHANNEL:",
+              "Videos: " + JSON.stringify(videos.slice(0, 10)),
+              "Playlists: " + JSON.stringify(playlists.slice(0, 10)),
               "",
-              "INSTRUCTION FOR RELATED VIDEOS:",
-              "- Select 2 to 3 most relevant or contextually helpful videos from the list above.",
-              "- Embed them under a dedicated section inside the description called 'Recommended Videos to Watch next:'.",
-              "- Show each selected video's exact title and its exact watch link (url) from the list above. Do NOT modify or hallucinate the URLs.",
+              "INSTRUCTION FOR RELATED CONTENT:",
+              "- Select 2 to 3 most relevant or contextually helpful videos OR playlists from the lists above.",
+              "- Embed them under a dedicated section inside the description called 'Recommended to Watch next:'.",
+              "- Show each selected item's exact title and its exact watch/playlist link (url) from the list above. Do NOT modify or hallucinate the URLs.",
               "- Place this section right before the CTA/social links at the bottom.",
             ].join("\n");
           }
@@ -248,16 +252,51 @@ async function getRecentVideos(channelId) {
   const videos = [];
   const entryMatches = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
   for (const entry of entryMatches) {
-    const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
-    const linkMatch = entry.match(/<link[^>]*?href="([^"]+?)"/);
+    const titleMatch = entry.match(/<title>(.*?)<\/title>/);
+    const linkMatch = entry.match(/<link rel="alternate" href="(.*?)"\/>/);
     if (titleMatch && linkMatch) {
       videos.push({
-        title: titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, "$1").trim(),
-        url: linkMatch[1].trim()
+        title: titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
+        url: linkMatch[1],
       });
     }
   }
   return videos;
+}
+
+async function getPlaylists(channelUrl) {
+  let handle = channelUrl.trim();
+  if (handle.includes("youtube.com/")) {
+    const parts = handle.split("youtube.com/");
+    handle = parts[1].split("/")[0].split("?")[0];
+  }
+  if (!handle.startsWith("@")) {
+    handle = "@" + handle;
+  }
+
+  const response = await fetch(`https://www.youtube.com/${handle}/playlists`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+  });
+  if (!response.ok) return [];
+  const html = await response.text();
+
+  const playlists = [];
+  // Regex to extract playlists from ytInitialData
+  const regex = /"playlistId":"([^"]+)","title":\{"runs":\[\{"text":"([^"]+)"\}\]\}/g;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    // Avoid duplicates
+    if (!playlists.find(p => p.id === match[1])) {
+      playlists.push({
+        id: match[1],
+        title: match[2],
+        url: `https://www.youtube.com/playlist?list=${match[1]}`
+      });
+    }
+  }
+  return playlists;
 }
 
 function buildMockSEO(topic, language) {

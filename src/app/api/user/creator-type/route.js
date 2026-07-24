@@ -13,13 +13,14 @@ export async function GET() {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { creatorType: true, defaultLinks: true },
+      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true },
     });
 
     return NextResponse.json({
       success: true,
       creatorType: dbUser?.creatorType || "education",
       defaultLinks: dbUser?.defaultLinks || "",
+      youtubeChannelUrl: dbUser?.youtubeChannelUrl || "",
     });
   } catch (error) {
     console.error("GET Creator Type Error:", error);
@@ -35,7 +36,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { creatorType, defaultLinks } = body;
+    const { creatorType, defaultLinks, youtubeChannelUrl } = body;
 
     if (!creatorType || !ALLOWED_TYPES.includes(creatorType)) {
       return NextResponse.json(
@@ -46,14 +47,19 @@ export async function POST(request) {
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { creatorType, defaultLinks: defaultLinks ?? undefined },
-      select: { creatorType: true, defaultLinks: true },
+      data: { 
+        creatorType, 
+        defaultLinks: defaultLinks ?? undefined,
+        youtubeChannelUrl: youtubeChannelUrl ?? undefined
+      },
+      select: { creatorType: true, defaultLinks: true, youtubeChannelUrl: true },
     });
 
     return NextResponse.json({
       success: true,
       creatorType: updatedUser.creatorType,
       defaultLinks: updatedUser.defaultLinks,
+      youtubeChannelUrl: updatedUser.youtubeChannelUrl,
     });
   } catch (error) {
     console.error("POST Creator Type Error:", error);

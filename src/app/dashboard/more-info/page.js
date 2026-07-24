@@ -65,6 +65,8 @@ export default function MoreInfoPage() {
   const [savedType, setSavedType]       = useState("education");
   const [defaultLinks, setDefaultLinks] = useState("");
   const [savedLinks, setSavedLinks]     = useState("");
+  const [channelUrl, setChannelUrl]     = useState("");
+  const [savedChannel, setSavedChannel] = useState("");
   const [saving, setSaving]             = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loading, setLoading]           = useState(true);
@@ -87,6 +89,10 @@ export default function MoreInfoPage() {
           if (data.defaultLinks) {
             setDefaultLinks(data.defaultLinks);
             setSavedLinks(data.defaultLinks);
+          }
+          if (data.youtubeChannelUrl) {
+            setChannelUrl(data.youtubeChannelUrl);
+            setSavedChannel(data.youtubeChannelUrl);
           }
           localStorage.setItem("kinetic_creator_type", data.creatorType);
         }
@@ -112,13 +118,19 @@ export default function MoreInfoPage() {
       const res = await fetch("/api/user/creator-type", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creatorType: selectedType, defaultLinks }),
+        body: JSON.stringify({ 
+          creatorType: selectedType, 
+          defaultLinks: defaultLinks,
+          youtubeChannelUrl: channelUrl
+        }),
       });
 
       const data = await res.json();
       if (data.success) {
-        setSavedType(selectedType);
-        setSavedLinks(defaultLinks);
+        setSavedType(data.creatorType);
+        setSavedLinks(data.defaultLinks || "");
+        setSavedChannel(data.youtubeChannelUrl || "");
+        localStorage.setItem("kinetic_creator_type", data.creatorType);
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 3000);
       } else {
@@ -246,6 +258,26 @@ export default function MoreInfoPage() {
           onChange={(e) => setDefaultLinks(e.target.value)}
           placeholder="e.g.&#10;Follow me on Instagram: https://instagram.com/...&#10;Download our App: https://play.google.com/..."
           className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all resize-none"
+        />
+      </div>
+
+      {/* YouTube Channel URL Integration Section */}
+      <div className="bg-charcoal border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Video className="w-4 h-4 text-red-500" /> YouTube Channel Link
+          </h2>
+          <span className="text-xs text-muted">Auto-scrapes videos & playlists</span>
+        </div>
+        <p className="text-[11px] text-muted max-w-2xl">
+          Save your channel URL to automatically scrape your latest videos and playlists for SEO recommendations.
+        </p>
+        <input
+          type="url"
+          placeholder="e.g. https://www.youtube.com/@mkbhd"
+          className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 transition-all"
+          value={channelUrl}
+          onChange={(e) => setChannelUrl(e.target.value)}
         />
       </div>
 
