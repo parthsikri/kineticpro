@@ -136,6 +136,7 @@ export default function Home() {
         hasSubjectPhoto: data.subjectPhotos?.length > 0,
         subjectCount:    data.subjectPhotos?.length || 0,
         poseMode:        data.poseMode || "ai",
+        isRevolutionary: data.isRevolutionary || false,
       }),
     });
     const planData = await planRes.json();

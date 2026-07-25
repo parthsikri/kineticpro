@@ -18,7 +18,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode } = body;
+    const { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, isRevolutionary } = body;
     const creatorType = body.creatorType || user.creatorType || "education";
     if (typeof videoTopic !== "string" || videoTopic.trim().length === 0 || videoTopic.length > 8_000) {
       return NextResponse.json({ success: false, error: "Video topic must be between 1 and 8,000 characters." }, { status: 400 });
@@ -98,7 +98,15 @@ export async function POST(request) {
         "- accentColor: bright high-contrast against the brand color (usually #f5d800 yellow)",
         "",
         "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
-      ].join("\n");
+      ];
+      if (isRevolutionary) {
+        systemPrompt.push(
+          "",
+          "THE USER HAS ENABLED 'REVOLUTIONARY MODE'.",
+          "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
+        );
+      }
+      systemPrompt = systemPrompt.join("\n");
 
       userPrompt = [
         `VIDEO TOPIC (with answers): "${videoTopic}"`,
@@ -191,7 +199,17 @@ export async function POST(request) {
         "- accentColor: bright high-contrast against the brand color (usually #f5d800 yellow)",
         "",
         "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
-      ].join("\n");
+      ];
+      
+      if (isRevolutionary) {
+        pass2System.push(
+          "",
+          "THE USER HAS ENABLED 'REVOLUTIONARY MODE'.",
+          "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
+        );
+      }
+      
+      const pass2SystemString = pass2System.join("\n");
 
       const pass2User = [
         `VIDEO TOPIC (with answers): "${videoTopic}"`,
@@ -231,7 +249,7 @@ export async function POST(request) {
         body: JSON.stringify({
           model: "deepseek-chat",
           messages: [
-            { role: "system", content: pass2System },
+            { role: "system", content: pass2SystemString },
             { role: "user",   content: pass2User   },
           ],
           temperature: 0.85,
@@ -246,7 +264,7 @@ export async function POST(request) {
 
     // Build the COMPLETE thumbnail prompt — text fully included, nothing added in browser
     plan.imagePrompt = buildCompleteThumbnailPrompt(plan, {
-      videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType,
+      videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType, isRevolutionary
     });
 
     return NextResponse.json({ success: true, needsMoreInfo: false, plan });
@@ -257,7 +275,7 @@ export async function POST(request) {
   }
 }
 
-function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType }) {
+function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType, isRevolutionary }) {
   const oc     = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
   const dynamicPose = plan.subjectPose || "right index finger pointing straight up toward the sky (classic 'number one' gesture), confident smiling expression";
@@ -339,9 +357,12 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
     ? textElements.map((el, i) => ((i + 1) + ". " + el)).join("\n\n")
     : "Bold impactful headline on the left side in white Impact font with accent-colored supporting text below";
 
+  const revModifier = isRevolutionary ? " REVOLUTIONARY, PARADIGM-SHIFTING, ULTRA-DRAMATIC," : "";
+  const revBg = isRevolutionary ? " Intense, dark contrasting background with ultra-vibrant, glowing highlight streaks. Highly cinematic, aggressive lighting, moody and epic scale." : "";
+
   if (creatorType === "vlogs") {
     return (
-      "Generate a COMPLETE, cinematic Vlog YouTube thumbnail image. Every element described below must appear " +
+      `Generate a COMPLETE,${revModifier} cinematic Vlog YouTube thumbnail image. Every element described below must appear ` +
       "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
       "REFERENCE STYLE: Top Indian & Global Lifestyle Vlogger thumbnails (Flying Beast, Sourav Joshi Vlogs). " +
       "Candid storytelling, ultra-expressive presenter, warm cinematic lighting, bold headline text.\n\n" +
@@ -355,7 +376,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
       "- BACKGROUND — Real-world immersive location (airport lounge, scenic drive, home lounge) with 35mm bokeh\n\n" +
       "SUBJECT:\n" + subjectNote + "\n\n" +
       "BACKGROUND:\n" +
-      "Cinematic real-world environment. " + brandColor + " is used as warm atmospheric accent and rim lighting on the subject. Shallow depth of field.\n\n" +
+      "Cinematic real-world environment. " + brandColor + " is used as warm atmospheric accent and rim lighting on the subject. Shallow depth of field." + revBg + "\n\n" +
       "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):\n" +
       textSection + "\n\n" +
       "TYPOGRAPHY RULES:\n" +
@@ -376,7 +397,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
   }
   if (creatorType === "gaming") {
     return (
-      "Generate a COMPLETE, explosive Gaming YouTube thumbnail image. Every element described below must appear " +
+      `Generate a COMPLETE, explosive,${revModifier} Gaming YouTube thumbnail image. Every element described below must appear ` +
       "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
       "REFERENCE STYLE: Top-tier Esports & Gaming Creator thumbnails (Techno Gamerz, Total Gaming, CarryMinati, MrBeast Gaming). " +
       "Hyper-expressive gamer reaction, 3D game environment, volumetric lighting, epic particle effects, high-CTR 3D text.\n\n" +
@@ -387,7 +408,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
       "COLOR & LIGHTING (DYNAMIC ADAPTIVE):\n" +
       "Do NOT restrict to a single color. Dynamically choose the best high-contrast color palette matching the specific game world " +
       "(e.g., glowing neon cyan, fiery orange/yellow sparks, intense purple energy, or dark cinematic moody atmospheric lighting). " +
-      "Dramatic volumetric light rays and rim lighting on the subject.\n\n" +
+      "Dramatic volumetric light rays and rim lighting on the subject." + revBg + "\n\n" +
       "LAYOUT ZONES:\n" +
       "- LEFT 45% — Gamer/Presenter wearing a gaming headset with extreme, expressive facial reaction (jaw-dropped shock, shouting victory, or intense focus).\n" +
       "- RIGHT 55% — Immersive 3D game action environment with cinematic depth of field, embers, and action effects.\n" +
@@ -407,7 +428,7 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
   }
 
   return (
-    "Generate a COMPLETE, professional YouTube thumbnail image. Every element described below must appear " +
+    `Generate a COMPLETE,${revModifier} professional YouTube thumbnail image. Every element described below must appear ` +
     "in the final image — this is the finished, ready-to-upload thumbnail, not a background.\n\n" +
     "REFERENCE STYLE: Top Indian YouTube education/news channels (Physics Wallah, Vedantu, Unacademy). " +
     "Bold typography, dramatic backgrounds, expressive presenter, coloured text banners, official notice card overlays. " +
@@ -425,9 +446,9 @@ function buildCompleteThumbnailPrompt(plan, { videoTopic, brandColor, highlightC
     "- CENTER — Supporting graphic elements (date callout if any)\n" +
     "- RIGHT area + OVERLAYS — Text elements\n\n" +
     "SUBJECT:\n" + subjectNote + "\n\n" +
-    "BACKGROUND:\n" +
+      "BACKGROUND:\n" +
     "Cinematic, dramatic environment. " + brandColor + " is the dominant atmospheric color — used as rim lighting " +
-    "on the subject, ambient glow, and color accent in the background. Dark and moody. Depth of field.\n\n" +
+    "on the subject, ambient glow, and color accent in the background. Dark and moody. Depth of field." + revBg + "\n\n" +
     "TEXT AND OVERLAY ELEMENTS (render ALL of these with sharp, crisp text):\n" +
     textSection + "\n\n" +
     "TYPOGRAPHY RULES:\n" +

@@ -62,6 +62,7 @@ export default function ThumbnailForm({ onSubmit, loading, creatorType }) {
   const [customColor, setCustomColor]       = useState("#1a3fd4");
   const [videoTopic, setVideoTopic]         = useState("");
   const [poseMode, setPoseMode]             = useState("ai"); // "same" | "ai"
+  const [isRevolutionary, setIsRevolutionary] = useState(false);
   const [showAssetModal, setShowAssetModal] = useState(false);
   const [activeSlot, setActiveSlot]         = useState("front"); // "front" | "left" | "right" | "custom"
   const [showExpectations, setShowExpectations] = useState(true);
@@ -167,7 +168,7 @@ export default function ThumbnailForm({ onSubmit, loading, creatorType }) {
       subjectPhotos = photos.map(p => p.base64);
     }
 
-    onSubmit({ videoTopic, brandColor, highlightColor, subjectPhotos, poseMode, syllabusFile });
+    onSubmit({ videoTopic, brandColor, highlightColor, subjectPhotos, poseMode, syllabusFile, isRevolutionary });
   };
 
   const totalFaceCount = uploadMode === "3d-face"
@@ -609,6 +610,34 @@ export default function ThumbnailForm({ onSubmit, loading, creatorType }) {
               />
               <span className="text-xs text-muted group-hover:text-gold transition-colors">Use Recommended</span>
             </button>
+          </div>
+        </div>
+
+        {/* ── Revolutionary Mode Toggle ─────────────────────────────────────── */}
+        <div className="space-y-3 pt-2">
+          <div 
+            onClick={() => setIsRevolutionary(!isRevolutionary)}
+            className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+              isRevolutionary 
+                ? "bg-red-950/40 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
+                : "bg-black/30 border-white/10 hover:border-white/20"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isRevolutionary ? "bg-red-500/20 text-red-500" : "bg-white/5 text-muted"
+              }`}>
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${isRevolutionary ? "text-red-400" : "text-white"}`}>Revolutionary Mode</p>
+                <p className="text-[10px] text-muted font-light leading-snug">Epic, paradigm-shifting, aggressive style for groundbreaking videos</p>
+              </div>
+            </div>
+            {/* Toggle switch */}
+            <div className={`w-10 h-5 rounded-full relative transition-colors ${isRevolutionary ? "bg-red-500" : "bg-white/10"}`}>
+              <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-all ${isRevolutionary ? "left-[23px]" : "left-[3px]"}`} />
+            </div>
           </div>
         </div>
 
