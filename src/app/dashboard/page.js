@@ -126,7 +126,8 @@ export default function Home() {
   const [regenSeoLoading, setRegenSeoLoading] = useState(false);
   const [creatorType]                         = useState("education");
   const callPlan = async (topicString, data) => {
-    const planRes = await fetch("/api/plan", {
+    const planEndpoint = data.isRevolutionary ? "/api/plan/revolutionary" : "/api/plan";
+    const planRes = await fetch(planEndpoint, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -155,6 +156,7 @@ export default function Home() {
         subjectPhotoBase64: data.compositeBase64 || null,
         brandLogoBase64:    null,
         hasLogo:            false,
+        quality:            data.isRevolutionary ? "medium" : "low",
       }),
     });
     const genData = await genRes.json();

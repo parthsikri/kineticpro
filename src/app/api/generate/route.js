@@ -78,10 +78,12 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { imagePrompt, subjectPhotoBase64, brandLogoBase64, hasLogo } = body;
+    const { imagePrompt, subjectPhotoBase64, brandLogoBase64, hasLogo, quality } = body;
     if (typeof imagePrompt !== "string" || imagePrompt.trim().length === 0 || imagePrompt.length > 8_000) {
       return NextResponse.json({ success: false, error: "Image prompt must be between 1 and 8,000 characters." }, { status: 400 });
     }
+    // quality: "low" (default, fast) | "medium" (better, revolutionary)
+    const imageQuality = quality === "medium" ? "medium" : "low";
     const subjectImage = subjectPhotoBase64 ? parseImageDataUri(subjectPhotoBase64, "Subject photo") : null;
     const logoImage = hasLogo && brandLogoBase64 ? parseImageDataUri(brandLogoBase64, "Brand logo") : null;
 
@@ -135,7 +137,7 @@ export async function POST(request) {
         formData.append("prompt", editPrompt);
         formData.append("model", modelName);
         formData.append("size", "2560x1440");
-        formData.append("quality", "low");
+        formData.append("quality", imageQuality);
         formData.append("n", "1");
 
         const response = await fetch("https://api.openai.com/v1/images/edits", {
@@ -221,7 +223,7 @@ async function generateFromText(apiKey, modelName, imagePrompt) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "2560x1440", quality: "low", output_format: "png" }),
+    body: JSON.stringify({ model: modelName, prompt: imagePrompt, n: 1, size: "2560x1440", quality: imageQuality, output_format: "png" }),
   });
   if (!response.ok) {
     const errText = await response.text();
