@@ -101,8 +101,13 @@ export async function POST(request) {
       if (isRevolutionary) {
         systemPrompt.push(
           "",
-          "THE USER HAS ENABLED 'REVOLUTIONARY MODE'.",
-          "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
+          "=== REVOLUTIONARY MODE ACTIVATED ===",
+          "This creator is about to drop something that will change the game. Your text strategy must reflect THAT.",
+          "HEADLINE: Must feel like a breaking news alert from the future. Use power words: EXPOSED, DESTROYED, IMPOSSIBLE, CHANGED FOREVER, NEVER SEEN BEFORE, THEY LIED, THE TRUTH.",
+          "BANNER: Must be provocative, urgent, almost outrageous — the kind of statement that stops a thumb mid-scroll.",
+          "TOP BADGE: Use something that signals a paradigm shift e.g. 'BOMBSHELL', 'GAME OVER', 'TRUTH REVEALED', 'HISTORIC'.",
+          "ENERGY: Think MrBeast level shock. Think TEDxBombay revelation. Think the most insane thing a creator in this niche has ever said.",
+          "Do NOT play safe. Do NOT use polite, soft, or standard educational phrasing. Every word must demand attention."
         );
       }
 
@@ -150,7 +155,7 @@ export async function POST(request) {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "deepseek-v4-pro",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user",   content: userPrompt   },
@@ -207,8 +212,13 @@ export async function POST(request) {
       if (isRevolutionary) {
         pass2System.push(
           "",
-          "THE USER HAS ENABLED 'REVOLUTIONARY MODE'.",
-          "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
+          "=== REVOLUTIONARY MODE ACTIVATED ===",
+          "This creator is about to drop something that will change the game. Your text strategy must reflect THAT.",
+          "HEADLINE: Must feel like a breaking news alert from the future. Use power words: EXPOSED, DESTROYED, IMPOSSIBLE, CHANGED FOREVER, NEVER SEEN BEFORE, THEY LIED, THE TRUTH.",
+          "BANNER: Must be provocative, urgent, almost outrageous — the kind of statement that stops a thumb mid-scroll.",
+          "TOP BADGE: Use something that signals a paradigm shift e.g. 'BOMBSHELL', 'GAME OVER', 'TRUTH REVEALED', 'HISTORIC'.",
+          "ENERGY: Think MrBeast level shock. Think TEDxBombay revelation. Think the most insane thing a creator in this niche has ever said.",
+          "Do NOT play safe. Do NOT use polite, soft, or standard educational phrasing. Every word must demand attention."
         );
       }
 
@@ -255,7 +265,7 @@ export async function POST(request) {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
         body: JSON.stringify({
-          model: "deepseek-chat",
+          model: "deepseek-v4-pro",
           messages: [
             { role: "system", content: pass2SystemString },
             { role: "user",   content: pass2User   },
