@@ -3,10 +3,9 @@ import { getSessionUser } from "../../../../lib/auth";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 
 /* ═══════════════════════════════════════════════════════════════════
-   REVOLUTIONARY MODE — Separate planning engine.
-   This route is specifically designed to generate EXPLOSIVE,
-   paradigm-shifting YouTube thumbnails with a completely different
-   visual DNA from the standard mode.
+   REVOLUTIONARY MODE — Separate, context-intelligent planning engine.
+   Picks the right revolution TYPE based on the actual video topic
+   so a teaching video never gets "THEY LIED" nonsense.
    ═══════════════════════════════════════════════════════════════════ */
 
 export async function POST(request) {
@@ -41,41 +40,100 @@ export async function POST(request) {
       return NextResponse.json({ success: true, needsMoreInfo: false, plan, isMock: true });
     }
 
-    /* ── Revolutionary DeepSeek call ────────────────────────────────── */
+    /* ── Subject instruction ─────────────────────────────────────── */
     const subjectInstruction = hasSubjectPhoto
       ? `Multi-angle reference photos (Front, Left, Right) of the creator have been provided. Pose mode: "${poseMode}" — ${
           poseMode === "ai"
-            ? "Design the most EXPLOSIVE, physically-intense, emotionally-raw pose possible (mid-air leap, aggressive forward lean, arms erupting outward, screaming to the sky, chest-pounding victory)"
-            : "Keep their exact pose but amp up the energy — dramatic lighting, particles, fire around them"
+            ? "Design the most expressive, high-energy, HIGH-CTR pose. It must look intense but BELIEVABLE for an education creator — not a superhero. Think: the most intense version of a confident, victorious teacher."
+            : "Keep their exact reference pose but amp up the energy with dramatic lighting and particle effects around them."
         }. Reconstruct their exact face and likeness with 100% precision.`
-      : "No subject photo. Create an ultra-dramatic, almost superhuman Indian creator figure with intense, aggressive energy.";
+      : "No subject photo. Create a confident, intense Indian educator/presenter — handsome, professional, extremely expressive.";
 
-    /* ── PASS 1: Always generate full plan directly (no clarification for revolutionary) */
+    /* ── System Prompt ─────────────────────────────────────────────── */
     const systemPrompt = [
-      "You are the world's most aggressive, high-impact YouTube thumbnail strategist.",
-      "You specialize in thumbnails that feel like a cultural earthquake — thumbnails that creators who break the internet use.",
+      "You are the world's most high-impact YouTube thumbnail strategist, specializing in Indian education and creator channels.",
+      "You specialize in thumbnails that feel like a cultural earthquake — the kind that make someone physically stop scrolling.",
       "",
-      "The creator has selected REVOLUTIONARY MODE. This means:",
-      "- They are posting something that will CHANGE their niche FOREVER.",
-      "- Standard thumbnails are FORBIDDEN. Every single element must scream urgency, revelation, and paradigm shift.",
-      "- Think: What would MrBeast, CarryMinati, and PewDiePie do if they taught Indian education? That energy.",
+      "The creator has selected REVOLUTIONARY MODE.",
+      "REVOLUTIONARY does NOT automatically mean conspiracy or 'they lied'. It means the thumbnail must be dramatically more intense, higher-stakes, and more emotionally charged than a standard thumbnail.",
+      "The revolution must be CONTEXTUALLY APPROPRIATE to the video topic.",
       "",
-      "TEXT STRATEGY — MANDATORY RULES:",
-      "- HEADLINE LINE 1: Must use one of these power-word archetypes: EXPOSED / DESTROYED / IMPOSSIBLE / TRUTH / NEVER AGAIN / GAME OVER / CHANGED FOREVER / THEY LIED",
-      "- HEADLINE LINE 2: The specific subject/topic — kept ultra short (2 words max), massive, italic, in the accent color",
-      "- BANNER TEXT: Must be a Hinglish statement so shocking it feels like a WhatsApp forward that goes viral. Max 7 words. Should make the viewer feel they'll MISS OUT if they don't watch.",
-      "- TOP BADGE: Must be one of: 'BOMBSHELL', 'EXPOSED', 'GAME OVER', 'TRUTH OUT', 'HISTORIC', 'THEY LIED', 'NO ONE TOLD YOU'",
-      "- ALERT CARD: Always show an alert card for revolutionary mode. Make the title dramatic. Use 'warning' or 'error' type always.",
+      "══════════════════════════════════════════════════",
+      "STEP 1: IDENTIFY THE REVOLUTION TYPE",
+      "══════════════════════════════════════════════════",
       "",
-      "SUBJECT POSE — MANDATORY (THIS IS THE MOST IMPORTANT PART):",
-      "- The pose MUST be physically explosive and intense. Weak poses are forbidden.",
-      "- Choose ONE of these archetypes and build on it for the specific topic:",
-      "  ARCHETYPE A — THE REVEALER: Both hands spreading wide open like they just exposed a secret, face in absolute shock/disbelief, eyes wide, mouth agape",
-      "  ARCHETYPE B — THE CONQUEROR: One fist raised to the sky, head tilted back in a battle cry, body leaning aggressively forward",
-      "  ARCHETYPE C — THE DISRUPTOR: Finger pointing DIRECTLY at camera lens like a challenge/accusation, intense eyes, slight lean forward, power stance",
-      "  ARCHETYPE D — THE DESTROYER: Arms crossed powerfully over chest, dominant smirk, slightly looking down at camera (making viewer feel small), lit from below",
-      "- CRITICAL: Describe a relevant physical prop the subject holds that relates to their topic (shattered book for syllabus topics, crumpled exam paper for exam topics, a burning/glowing formula sheet for maths/science, a trophy for results).",
-      "- The prop should look DAMAGED, EXPLOSIVE, or GLOWING — not clean and academic.",
+      "TYPE A — ACHIEVEMENT REVOLUTION (use for: teaching, full coverage, speed-run, syllabus videos):",
+      "  Signal words in topic: 'complete', 'full', 'hours', 'mein', 'in X hours', '1 video', 'syllabus', 'poora', 'khatam'",
+      "  Revolution angle: 'I compressed something that takes months into a tiny time box. Nobody has done this at this scale.'",
+      "  HEADLINE options: IMPOSSIBLE / RECORD BROKEN / NEVER DONE / KHATAM / FIRST EVER",
+      "  BADGE options: 'RECORD BROKEN', 'IMPOSSIBLE', 'FIRST EVER', 'HISTORIC', 'GAME CHANGER'",
+      "  POSE: THE CHALLENGER or THE ACHIEVER",
+      "",
+      "TYPE B — ANNOUNCEMENT REVOLUTION (use for: exam updates, results, postponement, breaking news):",
+      "  Signal words in topic: 'postponed', 'cancelled', 'result', 'breaking', 'update', 'change', 'notice'",
+      "  Revolution angle: 'Everything just changed. If you miss this, you'll regret it.'",
+      "  HEADLINE options: POSTPONED / CANCELLED / RESULT OUT / BREAKING / OFFICIAL",
+      "  BADGE options: 'BREAKING', 'OFFICIAL UPDATE', 'JUST IN', 'RESULT OUT', 'URGENT'",
+      "  POSE: THE REVEALER",
+      "",
+      "TYPE C — EXPOSÉ REVOLUTION (use ONLY for: myths busted, scam exposed, hidden truth, nobody told you):",
+      "  Signal words in topic: 'exposed', 'scam', 'truth', 'nobody tells', 'myth', 'lied', 'fake', 'hidden'",
+      "  Revolution angle: 'The industry has been hiding this. I'm the one brave enough to say it out loud.'",
+      "  HEADLINE options: EXPOSED / THEY LIED / TRUTH / BOMBSHELL / HIDDEN",
+      "  BADGE options: 'EXPOSED', 'THEY LIED', 'TRUTH OUT', 'BOMBSHELL', 'SECRET OUT'",
+      "  POSE: THE DISRUPTOR or THE DESTROYER",
+      "",
+      "⚠ CRITICAL RULE: Match the type to the topic. NEVER use 'THEY LIED' or 'EXPOSED' for a teaching video. That is misleading and kills trust. Use the type that HONESTLY matches the video's content.",
+      "",
+      "══════════════════════════════════════════════════",
+      "STEP 2: CHOOSE THE POSE ARCHETYPE",
+      "══════════════════════════════════════════════════",
+      "",
+      "THE ACHIEVER (best for Type A — achievement/teaching):",
+      "  Body: Standing tall, chest out, one arm raised with a confident thumbs-up OR bent elbow fist-pump at shoulder height (not over-the-top jump — grounded and powerful)",
+      "  Face: Massive confident smile, eyes shining, looking directly at camera with pride",
+      "  Energy: 'I just pulled off something nobody thought was possible. And I'm going to show you how.'",
+      "  Prop: A glowing stopwatch showing the time OR a cracked-open textbook with golden light bursting from its pages",
+      "",
+      "THE CHALLENGER (best for Type A — when topic is a bold claim):",
+      "  Body: Both hands flat on an invisible surface, leaning forward toward the camera, weight on hands",
+      "  Face: Chin slightly down, eyes locked intensely at camera, slight smirk — 'I dare you to doubt me'",
+      "  Energy: 'You think it's impossible? Watch me.'",
+      "  Prop: A glowing holographic equation or formula floating beside them",
+      "",
+      "THE REVEALER (best for Type B — announcements/updates):",
+      "  Body: Both arms spreading wide open to the sides, palms facing camera",
+      "  Face: Eyes wide in dramatic disbelief, mouth open — like they're unveiling something massive",
+      "  Energy: 'I can't believe this is actually happening. You NEED to see this.'",
+      "  Prop: A glowing official document/notice they're presenting to the camera",
+      "",
+      "THE DISRUPTOR (best for Type C — exposé/controversy):",
+      "  Body: One finger pointing DIRECTLY at the camera lens, slight forward lean, feet shoulder-width apart",
+      "  Face: Intense eyes, serious expression, jaw slightly set — a direct personal challenge",
+      "  Energy: 'I see what's happening. And I'm calling it out. Directly.'",
+      "  Prop: Holding a glowing/burning document that reveals the truth in their other hand",
+      "",
+      "THE DESTROYER (best for Type C — when creator has total confidence):",
+      "  Body: Arms crossed over chest, feet slightly apart, slight downward tilt of head — looking at camera from above",
+      "  Face: Dominant half-smirk, completely relaxed — they've already won",
+      "  Energy: 'I've already figured this out. The question is — have you?'",
+      "  Prop: A shattered textbook at their feet OR holding a glowing 'truth document'",
+      "",
+      "PROP RULES: Props MUST be topic-specific and look EPIC:",
+      "  Physics/Science: Glowing equation sheet, stopwatch, cracked textbook with light inside, burning formula",
+      "  Maths: Equation-covered blackboard fragment, glowing calculator",
+      "  Exam update: Glowing/crumpled official notice or circular",
+      "  Results: Glowing result sheet, golden trophy",
+      "  Exposé: Burning document, shattered logo",
+      "",
+      "══════════════════════════════════════════════════",
+      "STEP 3: TEXT RULES",
+      "══════════════════════════════════════════════════",
+      "",
+      "HEADLINE LINE 1: The power word — 1-2 words only, chosen from the TYPE-APPROPRIATE list above. Gigantic, white, cracked/3D font.",
+      "HEADLINE LINE 2: The topic/subject in 2 words, italic, in accent color, equally massive.",
+      "BANNER: A Hinglish statement that communicates the achievement or revelation. Should feel like a WhatsApp forward going viral. Max 7 words.",
+      "ALERT CARD: Always include. Title = the single most dramatic claim of the video. Type = 'error' for exposé, 'success' for achievement, 'warning' for announcement.",
       "",
       "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
     ].join("\n");
@@ -83,29 +141,33 @@ export async function POST(request) {
     const userPrompt = [
       `VIDEO TOPIC: "${videoTopic}"`,
       `BRAND COLOR: ${brandColor}`,
-      `HIGHLIGHT COLOR: ${highlightColor || "#ff3300"}`,
+      `HIGHLIGHT COLOR: ${highlightColor || "#ff6600"}`,
       `SUBJECT: ${subjectInstruction}`,
       `CREATOR TYPE: ${creatorType}`,
       "",
-      "Generate the full revolutionary plan:",
+      "Think carefully. Which TYPE (A/B/C) does this topic belong to?",
+      "Then choose the right pose archetype for that type.",
+      "Then generate the full plan:",
       "{",
       '  "needsMoreInfo": false,',
-      '  "conceptTitle": "5-word explosive thumbnail concept name",',
-      '  "ctrAnalysis": "2 sentences on why this will stop thumbs mid-scroll",',
-      '  "compositionStrategy": "1 sentence on explosive visual layout",',
-      '  "subjectPose": "Extremely detailed explosive pose description using one of the archetypes above, with specific prop that looks damaged/explosive/glowing",',
+      '  "revolutionType": "A or B or C",',
+      '  "poseArchetype": "THE ACHIEVER / THE CHALLENGER / THE REVEALER / THE DISRUPTOR / THE DESTROYER",',
+      '  "conceptTitle": "5-word explosive thumbnail concept",',
+      '  "ctrAnalysis": "2 sentences on why this thumbnail will stop thumbs mid-scroll",',
+      '  "compositionStrategy": "1 sentence on layout",',
+      '  "subjectPose": "VERY DETAILED pose — body position, face expression, exact prop description, lighting direction, energy description — minimum 40 words",',
       '  "overlayConfig": {',
-      `    "accentColor": "${highlightColor || "#ff3300"}",`,
-      '    "topBadge": "one of: BOMBSHELL | EXPOSED | GAME OVER | TRUTH OUT | HISTORIC | THEY LIED | NO ONE TOLD YOU",',
+      `    "accentColor": "${highlightColor || "#ff6600"}",`,
+      '    "topBadge": "TYPE-APPROPRIATE badge text",',
       '    "topBadgeColor": "#cc0000",',
-      '    "headline1": "POWER WORD — 1-2 words max (white text)",',
-      '    "headline2": "TOPIC — 2 words max (accent color)",',
-      '    "bannerText": "Viral Hinglish statement max 7 words",',
-      '    "bannerAccentWord": "the most shocking word in the banner",',
+      '    "headline1": "POWER WORD 1-2 words",',
+      '    "headline2": "TOPIC 2 words",',
+      '    "bannerText": "viral Hinglish statement max 7 words",',
+      '    "bannerAccentWord": "the most impactful word in the banner",',
       '    "showAlertCard": true,',
-      '    "alertTitle": "EXPLOSIVE ALERT TITLE IN CAPS",',
-      '    "alertBody": "1 shocking sentence",',
-      '    "alertType": "error",',
+      '    "alertTitle": "dramatic claim title",',
+      '    "alertBody": "1 punchy sentence that makes viewer afraid to miss out",',
+      '    "alertType": "success or error or warning",',
       '    "showDateCallout": false,',
       '    "dateText": null,',
       '    "dateIcon": null',
@@ -122,7 +184,7 @@ export async function POST(request) {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 1.1,
+        temperature: 1.0,
         response_format: { type: "json_object" },
       }),
     });
@@ -135,7 +197,6 @@ export async function POST(request) {
     const data = await response.json();
     let plan = JSON.parse(data.choices[0].message.content);
 
-    // Build the revolutionary image prompt
     plan.imagePrompt = buildRevolutionaryImagePrompt(plan, {
       videoTopic, brandColor, highlightColor, hasSubjectPhoto, subjectCount, poseMode, creatorType,
     });
@@ -152,42 +213,43 @@ export async function POST(request) {
 
 /* ═══════════════════════════════════════════════════════════════════
    REVOLUTIONARY IMAGE PROMPT BUILDER
-   Completely separate from the normal mode prompt.
-   Designed specifically for explosive, cinematic, dark-energy thumbnails.
+   Completely separate from normal mode. Designed for explosive,
+   cinematic, emotionally-charged thumbnails.
    ═══════════════════════════════════════════════════════════════════ */
 function buildRevolutionaryImagePrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode, creatorType }) {
   const oc = plan.overlayConfig || {};
-  const accent = highlightColor || oc.accentColor || "#ff3300";
-  const pose = plan.subjectPose || "arms exploding outward in pure shock revelation, face in awe, eyes wide, holding a crumpled burning exam paper";
+  const accent = highlightColor || oc.accentColor || "#ff6600";
+  const pose = plan.subjectPose || "standing tall with one arm raised in a confident fist-pump, beaming smile, holding a glowing stopwatch, looking directly at camera with intense pride";
 
   /* ── Subject block ─────────────────────────────────────────────── */
   const subjectBlock = hasSubjectPhoto
     ? `SUBJECT — MULTI-ANGLE FACE REFERENCE PROVIDED:
 The reference images contain Front, Left, and Right profile shots of the creator.
-Reconstruct their exact face: bone structure, skin tone, eye color, jawline — with 100% photorealistic precision.
+Reconstruct their EXACT face: bone structure, skin tone, eye color, jawline, hair — with 100% photorealistic precision.
 ${poseMode === "ai"
-  ? `NOW place them in this EXPLOSIVE, physically-intense pose: "${pose}".
-  CRITICAL POSE RULES:
-  - Their body must look like it has KINETIC ENERGY — not static, not posed, like a frame frozen mid-action
-  - Dramatic under-lighting OR split rim-lighting: one side in the brand color (${brandColor}), other side in the accent (${accent})
-  - Their expression: absolute intensity — shock, rage, triumph, or revelation — pick the most fitting for the topic
-  - The prop they hold must look SPECTACULAR: glowing, crumpled, burning, or shattered — never clean`
-  : `Keep their exact reference pose. Dramatically enhance with: explosive cinematic lighting, ${brandColor} rim light, particle effects floating around them.`
+  ? `Place them in this specific pose: "${pose}"
+  CRITICAL POSE RENDERING RULES:
+  - This must look like a REAL PHOTO, not CGI — the body must be anatomically grounded and natural
+  - The pose must feel INTENSE but BELIEVABLE for an education creator — not a superhero or an action movie character
+  - Lighting: Split cinematic rim lighting — ${brandColor} from left side, ${accent} from right side, creating a dramatic glow on their face and shoulders
+  - Their expression must be the central emotional anchor of the thumbnail — the viewer must feel the energy from their face alone`
+  : `Keep their exact reference pose. Apply dramatic split lighting: ${brandColor} from left, ${accent} from right. Add floating particle effects and depth.`
 }`
-    : `SUBJECT — Create an ultra-dramatic Indian creator/presenter figure:
+    : `SUBJECT — Create a confident, handsome Indian educator/presenter:
 Pose: "${pose}"
-Look: Black outfit, chiseled jawline, intense eyes — like a Bollywood action hero meets a revolutionary scientist
-Lighting: Split dramatic lighting — ${brandColor} from one side, ${accent} from the other
-Aura: They should look like someone who just discovered the secret the world was hiding`;
+Look: Well-groomed, professional, between 20-35 years old, dark clothing that pops against the background
+Lighting: Split dramatic lighting — ${brandColor} from left, ${accent} from right — cinematic rim light effect
+Expression: The core emotional anchor — must be immediately readable and intensely engaging`;
 
   /* ── Text elements ─────────────────────────────────────────────── */
   const textElements = [];
 
   if (oc.topBadge) {
+    const badgeColor = oc.alertType === "success" ? "#16a34a" : "#cc0000";
     textElements.push(
-      `TOP-LEFT CORNER — Aggressive pill badge:
-  Bold white ALL CAPS text "${oc.topBadge}" on a BLOOD RED (#cc0000) background
-  Badge has a subtle glow/halo effect, sharp rounded corners, feels like a warning label`
+      `TOP-LEFT CORNER — Bold pill-shaped badge:
+  ALL CAPS text "${oc.topBadge}" in pure white, on solid ${badgeColor} background
+  Badge has a subtle glow halo, sharp rounded corners — looks like an urgent broadcast label`
     );
   }
 
@@ -195,21 +257,22 @@ Aura: They should look like someone who just discovered the secret the world was
     const h1 = oc.headline1 ? `"${oc.headline1.toUpperCase()}"` : null;
     const h2 = oc.headline2 ? `"${oc.headline2.toUpperCase()}"` : null;
     textElements.push(
-      `MAIN HEADLINE — Left-center, stacked, MASSIVE:
-  ${h1 ? `Line 1: ${h1} — Impact/ultra-bold condensed font, pure WHITE, GIGANTIC (takes up 40% of height), 3D extrusion effect, strong red/orange drop-shadow, cracked or shattered texture on the letters` : ""}
-  ${h2 ? `Line 2: ${h2} — same massive size, ITALIC, color ${accent}, feels like it's on fire or glowing neon` : ""}
-  Both lines left-aligned, slightly overlapping each other for maximum impact`
+      `MAIN HEADLINE — Left-center of frame, MASSIVE, stacked:
+  ${h1 ? `Line 1: ${h1} — Impact/ultra-bold condensed font, pure WHITE, takes up 35-40% of the frame height, 3D emboss with slight shadow, NOT flat` : ""}
+  ${h2 ? `Line 2: ${h2} — same massive size, ITALIC, glowing ${accent} color, feels like it is lit from within` : ""}
+  Both lines flush left, slightly overlapping — massive scale is the key`
     );
   }
 
   if (oc.showAlertCard && oc.alertTitle) {
+    const alertBg = oc.alertType === "error" ? "#cc0000" : oc.alertType === "success" ? "#16a34a" : "#d97706";
     textElements.push(
-      `RIGHT SIDE — Breaking news style ALERT CARD:
-  Dark background with a thick red left-border stripe (like a BBC breaking news ticker)
-  Bold header: "⚠ BREAKING" in red
-  Main title: "${oc.alertTitle.toUpperCase()}" in white, large, bold
+      `RIGHT SIDE — Breaking broadcast style card:
+  Dark semi-transparent background with a thick ${alertBg} left-border stripe (like a news ticker)
+  Red "⚠ BREAKING" label at top
+  Main title: "${oc.alertTitle.toUpperCase()}" in white, bold, large
   Body: "${(oc.alertBody || "").slice(0, 80)}"
-  Style: TV news BREAKING ALERT — urgent, serious, alarming`
+  Feels urgent, official, TV broadcast quality`
     );
   }
 
@@ -217,100 +280,106 @@ Aura: They should look like someone who just discovered the secret the world was
     const upper = oc.bannerText.toUpperCase();
     const accentWord = oc.bannerAccentWord ? oc.bannerAccentWord.toUpperCase() : null;
     const bannerDesc = accentWord
-      ? `"${upper}" — the word "${accentWord}" in ${accent} (blazing fire orange/yellow), rest in pure white`
-      : `"${upper}" in pure white`;
+      ? `"${upper}" — the word "${accentWord}" blazing in ${accent}, the rest in pure white`
+      : `"${upper}" in white`;
     textElements.push(
-      `FULL-WIDTH BOTTOM BANNER STRIP:
-  Black background with a thin ${accent} line at the top
-  Impact condensed font: ${bannerDesc}
-  The text should feel like it's vibrating with urgency`
+      `FULL-WIDTH BOTTOM BANNER:
+  Pure black background with a 2px ${accent} line at the top edge
+  Impact bold condensed font: ${bannerDesc}
+  Text large enough to read at thumbnail size`
     );
   }
 
   const textSection = textElements.length > 0
     ? textElements.map((el, i) => `${i + 1}. ${el}`).join("\n\n")
-    : `Massive cracked white Impact text on the left with ${accent} glow effect, dark dramatic background`;
+    : `Massive white 3D-emboss Impact text left-aligned, ${accent} glow on secondary text`;
 
-  /* ── Base environment ──────────────────────────────────────────── */
-  const envByType = {
-    gaming: `Explosive gaming battle scene: shattered game controllers, neon particle explosions in ${brandColor} and ${accent}, dark apocalyptic environment with fire and embers`,
-    vlogs: `Dramatic cinematic real-world environment shattered/exploding into particles, the mundane world literally breaking apart around the subject`,
-    education: `Dark abandoned lecture hall or library — books and papers exploding outward from a central energy burst, equations and formulas etched in glowing ${accent} fire across the background`,
+  /* ── Environment ───────────────────────────────────────────────── */
+  const envByCreatorType = {
+    gaming: `Explosive battle arena with neon particle explosions in ${brandColor} and ${accent}, dark apocalyptic scene, embers and sparks floating`,
+    vlogs: `Dramatic location that is literally shattering into light particles around the subject — cinematic slow-motion explosion of the mundane world`,
+    education: `Dark, dramatic academic environment transformed into an energy field — books, papers, equations and physics diagrams exploding outward in slow motion from a central light burst point directly behind the subject, forming a halo of flying pages and glowing formulas around them`,
   };
-  const environment = envByType[creatorType] || envByType.education;
+  const environment = envByCreatorType[creatorType] || envByCreatorType.education;
 
   return (
-    `Generate a COMPLETE, EXPLOSIVE, REVOLUTIONARY YouTube thumbnail image that looks like a cultural earthquake. ` +
-    `Every element below MUST appear in the final image — this is the finished thumbnail, not a background sketch.\n\n` +
+    `Generate a COMPLETE, ultra-cinematic, HIGH-CTR YouTube thumbnail that feels like a cultural earthquake. ` +
+    `Every element below MUST appear in the final image. This is the finished, upload-ready thumbnail.\n\n` +
 
-    `REFERENCE STYLE: The most viral, shocking, paradigm-breaking thumbnails of all time. ` +
-    `Think MrBeast's biggest videos. Think CarryMinati at peak intensity. Think the most aggressive Bollywood movie poster crossed with a breaking news alert. ` +
-    `This thumbnail should make someone physically stop scrolling and feel their heart rate spike.\n\n` +
+    `REFERENCE AESTHETIC: The best Indian education thumbnails (Physics Wallah, Vedantu) crossed with the most explosive international creator thumbnails (MrBeast's biggest milestones). ` +
+    `High production value, intensely dramatic, but BELIEVABLE for an education context.\n\n` +
 
     `FORMAT: 16:9 landscape (1280x720)\n\n` +
 
     `TOPIC: ${videoTopic}\n\n` +
 
-    `ATMOSPHERE & VISUAL MOOD (CRITICAL — THIS DEFINES EVERYTHING):\n` +
+    `ATMOSPHERE (defines everything):\n` +
     `- Background: ${environment}\n` +
-    `- Overall color temperature: DARK and INTENSE — deep blacks, shadow zones, with explosive ${brandColor} and ${accent} as the ONLY light sources\n` +
-    `- Lighting style: Rim lighting from two angles — ${brandColor} from left, ${accent} from right — creating a dramatic split on the subject\n` +
-    `- Particle effects: Glowing embers, sparks, or light dust floating in the scene\n` +
-    `- Depth: Heavy cinematic depth of field — background slightly blurred, subject razor sharp\n` +
-    `- Vignette: Strong dark vignette around the edges to draw the eye to the center\n\n` +
+    `- Color temperature: DARK and INTENSE — deep blacks dominate, with ${brandColor} and ${accent} as the primary light sources\n` +
+    `- Lighting: Dramatic split rim lighting — ${brandColor} from left, ${accent} from right\n` +
+    `- Particles: Glowing embers, sparks, floating light dust in the air\n` +
+    `- Vignette: Strong dark edge vignette pulling focus to center\n` +
+    `- Depth of field: Background slightly bokeh, subject razor sharp\n\n` +
 
     `SUBJECT:\n${subjectBlock}\n\n` +
 
-    `TEXT & OVERLAY ELEMENTS (render ALL with maximum crispness, 4K sharpness):\n` +
+    `TEXT & OVERLAY ELEMENTS (all must be crisp, clear, readable at small sizes):\n` +
     textSection + `\n\n` +
 
-    `TYPOGRAPHY RULES:\n` +
-    `- Headlines: Impact or ultra-bold condensed sans-serif, ALL CAPS\n` +
-    `- Headline letters should have a 3D extrusion or emboss effect — not flat\n` +
-    `- Strong red/black drop shadow on all text for maximum legibility over dark backgrounds\n` +
-    `- All text: perfectly spelled, razor sharp edges, feels PRINTED in the scene not overlaid\n\n` +
+    `TYPOGRAPHY:\n` +
+    `- Impact / ultra-bold condensed sans-serif for headlines\n` +
+    `- Headlines have 3D emboss or extrude effect — NOT flat\n` +
+    `- Strong dark drop shadow on all text for contrast\n` +
+    `- Every character perfectly spelled and sharp\n\n` +
 
-    `ANATOMY RULES (CRITICAL):\n` +
-    `- Subject MUST have exactly two natural arms and hands\n` +
-    `- Hands perfectly formed, anatomically correct\n` +
-    `- ZERO extra limbs, ZERO extra fingers, ZERO floating hands\n\n` +
+    `ANATOMY (CRITICAL):\n` +
+    `- Subject has EXACTLY two natural arms and hands\n` +
+    `- Hands are anatomically perfect — no extra fingers\n` +
+    `- ZERO extra limbs or floating hands\n\n` +
 
-    `WHAT TO AVOID:\n` +
-    `- NO clean academic backgrounds\n` +
-    `- NO soft, pastel, or gentle colors\n` +
-    `- NO calm or composed expression on the subject\n` +
-    `- NO standard stock-photo poses\n` +
-    `- NO generic "pointing at the camera" lazy pose\n\n` +
+    `AVOID:\n` +
+    `- Soft pastel backgrounds\n` +
+    `- Calm or neutral expressions\n` +
+    `- Stock photo poses (basic pointing, standing straight)\n` +
+    `- Superhero or over-the-top action movie poses that look unrealistic for an educator\n` +
+    `- Generic lecture hall background without dramatic transformation\n\n` +
 
-    `QUALITY: Ultra-photorealistic, 4K, magazine-cover level sharpness. ` +
-    `The thumbnail must look like it cost ₹50,000 to produce. ` +
-    `Every pixel must scream "THIS WILL CHANGE YOUR LIFE IF YOU DON'T WATCH IT."`
+    `QUALITY: Photorealistic, cinematic, 4K level detail. ` +
+    `The thumbnail must feel like it was shot by a professional film crew AND designed by a top-tier creative agency. ` +
+    `The viewer must feel a physical urge to click it.`
   );
 }
 
 /* ── Fallback plan (no API key) ────────────────────────────────────── */
 function buildRevolutionaryFallbackPlan({ videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode }) {
+  const t = (videoTopic || "").toLowerCase();
+  const isAchievement = t.includes("hour") || t.includes("complete") || t.includes("full") || t.includes("mein") || t.includes("poora") || t.includes("khatam");
+  const isAnnouncement = t.includes("postpone") || t.includes("result") || t.includes("cancel") || t.includes("breaking");
+
   const plan = {
     needsMoreInfo: false,
-    conceptTitle: "Game-Changing Revelation Thumbnail",
+    revolutionType: isAnnouncement ? "B" : "A",
+    poseArchetype: isAnnouncement ? "THE REVEALER" : "THE ACHIEVER",
+    conceptTitle: isAchievement ? "Record-Breaking Achievement Unlocked" : "Game-Changing Announcement",
     ctrAnalysis:
-      "The explosive visual language and provocative text creates instant FOMO, forcing viewers to stop scrolling. The dark cinematic aesthetic signals this is unlike anything they've seen.",
+      "The explosive visual achievement angle creates instant curiosity and FOMO — viewers feel they're about to miss the most efficient study session ever made. The dramatic cinematic environment signals premium, high-value content.",
     compositionStrategy:
-      "Subject in explosive mid-action pose LEFT, massive cracked headline CENTER-LEFT, breaking alert card RIGHT, full-width viral banner BOTTOM.",
-    subjectPose:
-      "arms spread wide in explosive revelation pose, face showing pure shock and disbelief, eyes wide open, mouth slightly open, holding a glowing crumpled exam paper that appears to be on fire",
+      "Subject ACHIEVER pose LEFT with epic prop, massive achievement headline CENTER-LEFT, breaking alert card RIGHT, viral Hinglish banner BOTTOM.",
+    subjectPose: isAchievement
+      ? "standing confidently, one arm raised in a triumphant fist-pump at shoulder height, massive beaming smile, eyes bright and locked on camera, holding a glowing stopwatch in the other hand showing a 6-hour countdown, dramatic ${brandColor} rim light from left and ${accent} from right, extremely proud and victorious energy"
+      : "both arms spread wide open to the sides with palms facing camera, eyes wide in dramatic shock/excitement, mouth open in awe, holding a glowing official document, dramatic split lighting",
     overlayConfig: {
-      accentColor: highlightColor || "#ff3300",
-      topBadge: "GAME OVER",
-      topBadgeColor: "#cc0000",
-      headline1: "EXPOSED",
-      headline2: "TRUTH",
-      bannerText: "Yeh sach duniya se chupaaya tha!",
-      bannerAccentWord: "chupaaya",
+      accentColor: highlightColor || "#ff6600",
+      topBadge: isAchievement ? "RECORD BROKEN" : "BREAKING",
+      topBadgeColor: isAchievement ? "#16a34a" : "#cc0000",
+      headline1: isAchievement ? "IMPOSSIBLE" : "BREAKING",
+      headline2: "ACHIEVEMENT",
+      bannerText: isAchievement ? "Poora syllabus khatam kar do aaj!" : "Yeh news miss mat karna!",
+      bannerAccentWord: isAchievement ? "khatam" : "miss",
       showAlertCard: true,
-      alertTitle: "EVERYTHING CHANGED",
+      alertTitle: isAchievement ? "RECORD BROKEN" : "OFFICIAL UPDATE",
       alertBody: videoTopic.slice(0, 80),
-      alertType: "error",
+      alertType: isAchievement ? "success" : "error",
       showDateCallout: false,
       dateText: null,
       dateIcon: null,
