@@ -96,9 +96,8 @@ export async function POST(request) {
         "- Headline: SHORT and PUNCHY — max 2-3 words per line",
         "- Use HINGLISH where it genuinely fits the topic tone",
         "- accentColor: bright high-contrast against the brand color (usually #f5d800 yellow)",
-        "",
-        "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
       ];
+
       if (isRevolutionary) {
         systemPrompt.push(
           "",
@@ -106,6 +105,12 @@ export async function POST(request) {
           "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
         );
       }
+
+      systemPrompt.push(
+        "",
+        "Respond ONLY with valid raw JSON — no markdown, no code blocks."
+      );
+      
       systemPrompt = systemPrompt.join("\n");
 
       userPrompt = [
@@ -197,8 +202,6 @@ export async function POST(request) {
         "- Headline: SHORT and PUNCHY — max 2-3 words per line",
         "- Use HINGLISH where it genuinely fits the topic tone",
         "- accentColor: bright high-contrast against the brand color (usually #f5d800 yellow)",
-        "",
-        "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
       ];
       
       if (isRevolutionary) {
@@ -208,6 +211,11 @@ export async function POST(request) {
           "Your text choices (headlines, banners) must be exceptionally bold, provocative, intense, and paradigm-shifting. Do not hold back — make the concept title and text feel epic, groundbreaking, and wildly high-energy."
         );
       }
+
+      pass2System.push(
+        "",
+        "Respond ONLY with valid raw JSON — no markdown, no code blocks."
+      );
       
       const pass2SystemString = pass2System.join("\n");
 
@@ -271,7 +279,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("Plan Route Error:", error);
-    return NextResponse.json({ success: false, error: "Planning failed. Please try again." }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Planning failed: " + error.message }, { status: 500 });
   }
 }
 
