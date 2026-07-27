@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import {
   Search, Sparkles, Check, ChevronDown, ChevronUp,
-  Clock, AlignLeft, List, Zap,
+  Clock, AlignLeft, List, Zap, Copy,
   TrendingUp, Target, Lightbulb, Globe, Users, FileText, Award
 } from "lucide-react";
 import SeoResultPanel from "../components/SeoResultPanel";
@@ -17,6 +17,21 @@ const LANGUAGES = [
   { value: "Tamil",     label: "தமிழ் (Tamil)"      },
   { value: "Telugu",    label: "తెలుగు (Telugu)"    },
 ];
+
+function CopyButton({ text, label = "" }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button onClick={handleCopy} className="p-2 hover:bg-white/5 rounded-md text-muted hover:text-white transition-colors flex items-center gap-1.5 shrink-0 group" title="Copy">
+      {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 group-hover:text-white transition-colors" />}
+      {label && <span className="text-[10px] font-bold uppercase tracking-wider">{copied ? "Copied" : label}</span>}
+    </button>
+  );
+}
 
 /* ── generating animation ───────────────────────────────────── */
 const GEN_STEPS = [
