@@ -103,7 +103,15 @@ export async function POST(request) {
     const data = await response.json();
     const rawText = data.choices[0].message.content || "";
 
-    const result = JSON.parse(rawText);
+    // Strip any accidental markdown code fences
+    const firstBrace = rawText.indexOf("{");
+    const lastBrace = rawText.lastIndexOf("}");
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error(`No valid JSON block found in AI output: ${rawText}`);
+    }
+    const cleaned = rawText.substring(firstBrace, lastBrace + 1);
+
+    const result = JSON.parse(cleaned);
     return NextResponse.json({ success: true, chapters: result.chapters || [] });
 
   } catch (error) {
