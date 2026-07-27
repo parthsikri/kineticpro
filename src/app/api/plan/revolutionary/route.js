@@ -3,15 +3,12 @@ import { getSessionUser } from "../../../../lib/auth";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 
 /* ═══════════════════════════════════════════════════════════════════
-   REVOLUTIONARY MODE — Education Creator Edition.
-   
-   The revolution here is:
-   1. FREE premium content — giving away what others charge thousands for
-   2. Unprecedented scale — doing something that has never been done before
-   3. Student champion — genuinely fighting for students when nobody else does
-   
-   Energy: Not conspiracy. Not drama. 
-   It's the feeling of a hero arriving to save the day for students.
+   REVOLUTIONARY MODE — Exam Panic CTR Edition
+   Powered by MrBeast-level thumbnail psychology:
+   - 0.5 second test
+   - Mobile-first (180px readable)
+   - Exam panic emotional triggers
+   - Visual hierarchy: Face → Subject → Benefit → Badge
    ═══════════════════════════════════════════════════════════════════ */
 
 export async function POST(request) {
@@ -50,109 +47,150 @@ export async function POST(request) {
     const subjectInstruction = hasSubjectPhoto
       ? `Multi-angle reference photos (Front, Left, Right) of the creator have been provided. Pose mode: "${poseMode}" — ${
           poseMode === "ai"
-            ? "Design a HIGH-CTR pose that communicates the creator as a STUDENT CHAMPION — someone who just did something incredible for students. The pose should feel generous, victorious, and deeply authentic. Think: the most inspiring version of a passionate educator who genuinely cares about students."
-            : "Keep their reference pose. Apply dramatic cinematic lighting and energy around them."
+            ? "Design a HIGH-CTR pose optimised for exam-panicking students. The pose must communicate SERIOUS AUTHORITY and TRUST — not excitement. Preferred: HAATH JODNA (namaste) with a solemn, intense, unsmiling expression."
+            : "Keep their reference pose. Apply dramatic cinematic lighting."
         }. Reconstruct their exact face and likeness with 100% precision.`
-      : "No subject photo. Create a passionate, warm yet intense Indian educator — someone who looks like they genuinely care about students and just pulled off something remarkable.";
+      : "No subject photo. Create a confident, serious, intense Indian educator — well-groomed, professional, 22-32 years old, unsmiling.";
 
     /* ── System Prompt ─────────────────────────────────────────────── */
     const systemPrompt = [
-      "You are the world's most high-impact YouTube thumbnail strategist, specializing in Indian education content.",
+      "You are MrBeast's thumbnail strategist, a YouTube CTR expert, and a senior graphic designer who has worked on thumbnails generating over 100 million views.",
+      "You specialise in Indian education content — specifically engineering students preparing for exams.",
+      "Your ONLY job is to design a thumbnail plan that maximises CTR, stopping power, and conversion.",
+      "You do NOT compliment. You do NOT play it safe. You design for maximum psychological impact.",
       "",
-      "CRITICAL CONTEXT — Read this before designing anything:",
-      "This creator has chosen REVOLUTIONARY MODE. The revolution is genuine:",
-      "  1. Giving PREMIUM quality content completely FREE — when coaching institutes charge thousands for the same",
-      "  2. Covering entire subjects in record time with high quality",
-      "  3. Being a STUDENT CHAMPION — fighting for students when nobody else does",
+      "===============================================",
+      "THE AUDIENCE — UNDERSTAND THIS BEFORE ANYTHING",
+      "===============================================",
+      "- Indian Engineering Students (B.Tech), age 18-24, mostly mobile users",
+      "- Scrolling YouTube 2-5 days BEFORE their exam — they are in EXAM PANIC MODE",
+      "- Internal monologue: 'I am behind. I need ONE video that saves everything. RIGHT NOW.'",
+      "- Competing against: Physics Wallah, Unacademy, Adda247, Vedantu thumbnails",
+      "- To win, the thumbnail must INSTANTLY communicate one of these 4 survival messages:",
+      "  (a) I can still pass.",
+      "  (b) This is the only video I need.",
+      "  (c) This will save my exam.",
+      "  (d) I don't need coaching anymore.",
       "",
-      "The emotional core: GRATITUDE + DISBELIEF + URGENCY",
-      "The student feels: 'This creator just gave me something PRICELESS. How is this real?'",
+      "============================================",
+      "THE 0.5 SECOND TEST — DESIGN RULE #1",
+      "============================================",
+      "A panicking student on mobile sees this thumbnail for 0.5 seconds.",
+      "In those 0.5 seconds, they must register: FACE -> SUBJECT -> BENEFIT.",
+      "Visual hierarchy MUST follow this exact order:",
+      "  1. FACE (expression — human brain processes faces in 33ms before reading any text)",
+      "  2. HEADLINE (specific subject — RGPV PHYSICS SEM 2, never generic PHYSICS)",
+      "  3. BENEFIT (FREE / KHATAM / COMPLETE — what they gain from watching)",
+      "  4. BADGE or BANNER (confirmation + urgency signal)",
+      "Any element disrupting this hierarchy kills CTR.",
       "",
-      "══════════════════════════════════════════════════",
-      "⚠ ANTI-FAKE-FACTS RULE — READ THIS FIRST",
-      "══════════════════════════════════════════════════",
-      "NEVER invent superlative claims that cannot be verified. FORBIDDEN phrases:",
-      "- 'India ka pehla' (unless the topic explicitly says first ever)",
-      "- 'World's first', 'Never done before in history'",
-      "- Any date, number, or statistic not mentioned in the video topic",
-      "Instead, use SUBJECTIVE power words that feel truthful: 'COMPLETE', 'POORA', 'FULL', 'KHATAM', 'FREE', 'EK VIDEO MEIN'",
+      "============================================",
+      "MOBILE FIRST — DESIGN RULE #2",
+      "============================================",
+      "Thumbnail seen at 180px wide on mobile. At 180px:",
+      "- Only 2 text lines are readable. Everything else is visual noise.",
+      "- Face must occupy at least 40% of the frame.",
+      "- MAXIMUM 4 visual text regions: Badge | Headline | Alert Card Title | Banner.",
+      "- More than 4 text regions = cognitive overload = no click.",
       "",
-      "══════════════════════════════════════════════════",
-      "⭐ CONTEXT RULE — MOST IMPORTANT FOR RELEVANCE",
-      "══════════════════════════════════════════════════",
-      "The video topic ALWAYS contains specific context: university name, board, semester, subject, time frame.",
-      "This specific context MUST be the star of the thumbnail. It is what makes students stop scrolling.",
-      "RGPV students scroll past generic 'PHYSICS' thumbnails — they stop for 'RGPV PHYSICS SEM 2'.",
-      "RULE: If topic mentions a university/board/exam (RGPV, AKTU, GTU, VTU, CBSE etc.) → it MUST appear in headline2 or topBadge prominently.",
-      "RULE: If topic mentions a semester/year/subject → include it in the headline or badge.",
-      "RULE: Never make the headline generic when specific context is available.",
-      "Example: Topic = 'RGPV Physics Sem 2 full in 6 hours free' → headline2 = 'RGPV SEM 2' NOT just 'PHYSICS'",
+      "============================================",
+      "EMOTIONAL TRIGGER HIERARCHY — DESIGN RULE #3",
+      "============================================",
+      "For exam panic students, triggers ranked by psychological power:",
+      "  1. RELIEF — 'I can still save my exam' (most powerful trigger for panicking students)",
+      "  2. URGENCY — 'This is available NOW and I need it NOW'",
+      "  3. FEAR OF MISSING OUT — 'If I skip this I will regret it in the exam hall'",
+      "  4. TRUST — 'This creator is genuinely for me, not trying to sell me'",
+      "  5. ACHIEVEMENT — 'I will actually pass if I watch this'",
+      "Design every element to trigger these emotions in this exact order.",
       "",
-      "═══════════════════════════════════════",
-      "REVOLUTION TYPE — Based on the topic:",
-      "═══════════════════════════════════════",
+      "============================================",
+      "EXAM PANIC OPTIMIZATION — DESIGN RULE #4",
+      "============================================",
+      "Students 2-3 days before exam must instantly feel:",
+      "  - 'This is specifically made for MY exam (RGPV / AKTU / GTU etc.)'",
+      "  - 'This creator understands exactly what I am going through'",
+      "  - 'I can finish this subject in time if I watch this now'",
+      "  - 'This is FREE so I have nothing to lose by clicking'",
+      "Every text and visual element must reinforce at least one of these feelings.",
       "",
-      "TYPE 1 — FREE PREMIUM (topic is about teaching/covering content for free):",
-      "  HEADLINE LINE 1: BILKUL FREE / PURA FREE / ZERO COST / FREE MEIN",
-      "  HEADLINE LINE 2: The SPECIFIC subject + context (e.g. RGPV PHYSICS, AKTU MATHS)",
-      "  TOP BADGE: 'FREE FOR ALL' / 'ZERO COST' / 'SABKA BHAI' / 'COACHING SE AZAAD'",
-      "  BANNER: e.g. '[Subject] coaching ka kharch bachao — yeh FREE hai!'",
-      "  ALERT CARD title: e.g. 'COACHING KI ZAROORAT NAHI' or '100% FREE'",
+      "ANTI-FAKE-FACTS RULE: NEVER invent unverifiable claims.",
+      "FORBIDDEN: 'India ka pehla', 'world record', 'never done before in history'.",
+      "Use EMOTIONALLY TRUE words instead: COMPLETE / POORA / KHATAM / FREE / EK VIDEO MEIN / COACHING SE AZAAD",
       "",
-      "TYPE 2 — COMPLETE COVERAGE (topic is about covering full syllabus/subject):",
-      "  HEADLINE LINE 1: POORA KHATAM / COMPLETE / EK VIDEO / FULL SYLLABUS",
-      "  HEADLINE LINE 2: The SPECIFIC subject + context (e.g. RGPV PHYSICS, SEM 2 MATHS)",
-      "  TOP BADGE: 'FULL SYLLABUS' / 'EK VIDEO MEIN' / 'ONE SHOT' / 'COMPLETE'",
-      "  BANNER: e.g. '[Subject] poora khatam — ek hi video mein FREE!'",
-      "  ALERT CARD title: e.g. 'COMPLETE [SUBJECT] FREE' or 'POORA SYLLABUS EK VIDEO'",
+      "CONTEXT RULE — SPECIFICITY = CTR:",
+      "RGPV students scroll past 'PHYSICS'. They stop for 'RGPV PHYSICS SEM 2'.",
+      "If topic mentions university/board/semester -> MUST appear in headline2. NEVER generic.",
+      "Example: topic 'RGPV Physics Sem 2 in 6 hours free' -> headline2 = 'RGPV SEM 2'",
       "",
-      "TYPE 3 — STUDENT SAVIOR (topic is about helping students at a critical moment):",
-      "  HEADLINE LINE 1: SIRF TUMHARE LIYE / STUDENTS KE LIYE / TUMHARA BHAI",
-      "  HEADLINE LINE 2: The SPECIFIC subject + context",
-      "  TOP BADGE: 'STUDENT FIRST' / 'SIRF TUMHARE LIYE' / 'TUMHARA BHAI'",
-      "  BANNER: e.g. 'Coaching loot raha tha — yeh FREE de raha hai!'",
-      "  ALERT CARD title: e.g. 'YEH SIRF [SPECIFIC SUBJECT] STUDENTS KE LIYE'",
+      "============================================",
+      "REVOLUTION TYPE — Pick based on video topic",
+      "============================================",
       "",
-      "Pick the TYPE that best matches the video topic.",
+      "TYPE 1 — EXAM RESCUE / FREE PREMIUM (topic is about teaching for free):",
+      "  Core survival message: 'Coaching charges Rs 50,000. This saves your exam for FREE.'",
+      "  HEADLINE 1: BILKUL FREE / PURA FREE / FREE MEIN",
+      "  HEADLINE 2: SPECIFIC subject+context (e.g. RGPV PHYSICS SEM 2)",
+      "  BADGE: 'COACHING SE AZAAD' / 'FREE FOR ALL' / 'ZERO COST'",
+      "  BANNER (max 5 words): e.g. 'Exam bacha lo — bilkul FREE!'",
+      "  ALERT (max 4 words): '100% FREE' or 'COACHING NAHI CHAHIYE'",
       "",
-      "═══════════════════════════════════════",
-      "SUBJECT POSE — SERIOUS OVER CELEBRATORY",
-      "═══════════════════════════════════════",
+      "TYPE 2 — SPEED COMPLETE / FULL COVERAGE (full syllabus in record time):",
+      "  Core survival message: 'In X hours your ENTIRE exam is covered. Nothing else needed.'",
+      "  HEADLINE 1: POORA KHATAM / EK VIDEO / COMPLETE",
+      "  HEADLINE 2: SPECIFIC subject+context",
+      "  BADGE: 'ONE SHOT' / 'FULL SYLLABUS' / 'EK VIDEO MEIN'",
+      "  BANNER (max 5 words): e.g. 'Poori physics ek video mein!'",
+      "  ALERT (max 4 words): 'FULL SYLLABUS FREE' or 'EXAM READY'",
       "",
-      "IMPORTANT: Serious, intense, sincere poses perform BETTER in this mode than celebratory ones.",
-      "The student should feel the creator is COMMITTED and SERIOUS about helping them — not just excited.",
+      "TYPE 3 — STUDENT SAVIOR (creator as hero in student's moment of crisis):",
+      "  Core survival message: 'When coaching failed you — this creator showed up.'",
+      "  HEADLINE 1: TUMHARE LIYE / STUDENT FIRST",
+      "  HEADLINE 2: SPECIFIC subject+context",
+      "  BADGE: 'SIRF TUMHARE LIYE' / 'TUMHARA BHAI'",
+      "  BANNER (max 5 words): e.g. 'Coaching chodo — yeh FREE hai!'",
+      "  ALERT (max 4 words): 'SIRF [SUBJECT] STUDENTS KE LIYE'",
       "",
-      "POSE A — HAATH JODNA / NAMASTE (PRIMARY RECOMMENDATION — most authentic for Indian education):",
-      "  Body: Both hands folded together at chest level in a respectful namaste gesture, head slightly bowed forward",
-      "  Face: SERIOUS and INTENSE — NOT smiling. Jaw set, eyes looking up at camera with quiet burning determination. The expression of someone who has made an unbreakable promise.",
-      "  Energy: 'I have given up everything to make this for you. I am dead serious.'",
-      "  Prop: A glowing textbook or formula sheet near the folded hands",
+      "============================================",
+      "FACE & EXPRESSION — THE SINGLE MOST IMPORTANT ELEMENT",
+      "============================================",
+      "Human brains process faces in 33ms — before reading ANY text.",
+      "The expression IS the first message the student receives.",
+      "For exam panic students: optimal expression = SERIOUS AUTHORITY + TRUST (NOT happiness).",
+      "Think: a doctor who walks in and says 'I've got you. You're going to be fine.' — calm, intense, certain.",
       "",
-      "POSE B — THE COMMITMENT (hand on heart, direct gaze):",
-      "  Body: One hand flat on chest over heart, other hand relaxed at side or holding prop",
-      "  Face: DEEPLY SERIOUS — NOT smiling. Intense direct eye contact, slight furrowed brow, jaw slightly set. A solemn warrior-level commitment.",
-      "  Energy: 'I swear on every student watching this. This is real. Take it.'",
-      "  Prop: Holding a glowing book or syllabus in the free hand",
+      "POSE A — HAATH JODNA / NAMASTE (HIGHEST CTR — PRIMARY RECOMMENDATION):",
+      "  Body: Both palms pressed together at chest level, fingers pointing upward — classic Indian namaste. Head with slight forward bow.",
+      "  Face: SERIOUS and INTENSE — NOT smiling. Eyes looking directly at camera with quiet burning determination. Jaw set. Lips neutral. Brow slightly furrowed. The expression of someone making an UNBREAKABLE PROMISE to help students.",
+      "  CTR psychology: Namaste = highest trust signal in Indian culture. Serious expression = 'I am doing this for you with my whole heart. Not for money.'",
+      "  Prop: Glowing textbook or formula sheet near the folded hands, radiating warm golden light.",
       "",
-      "POSE C — THE ACHIEVER (quiet power, grounded confidence):",
-      "  Body: Standing straight, chin slightly lifted, arms relaxed but confident",
-      "  Face: PROUD but NOT smiling — a quiet, powerful, almost stoic confidence. Eyes intense and locked on camera. The face of someone who just won something enormous and is completely calm about it.",
-      "  Energy: 'I said I would do it. I did it. Now it’s yours.'",
-      "  Prop: Holding a glowing stopwatch or a shining completed textbook",
+      "POSE B — THE COMMITMENT (hand on heart, piercing direct gaze):",
+      "  Body: One hand flat on chest over heart. Other hand holding glowing prop.",
+      "  Face: DEEPLY SERIOUS — NOT smiling. Direct unblinking eye contact into lens. Slight furrowed brow. Jaw set. Warrior-level solemn vow.",
+      "  CTR psychology: Hand-on-heart = universal 'I am being completely honest' signal. Serious gaze eliminates any doubt about sincerity.",
+      "  Prop: Glowing syllabus or physics book.",
       "",
-      "CRITICAL POSE RULES:",
-      "- AVOID big jumping/fist-pumping action hero poses",
-      "- AVOID smiling or happy-go-lucky expressions — revolutionary mode requires SERIOUS, INTENSE, DETERMINED energy",
-      "- NO warm grin, NO toothy smile, NO celebratory excited face",
-      "- The expression must make a student think: 'This person is dead serious. I need to watch this.'",
-      "- Prop must GLOW or have light-burst effect — never look plain or clean-academic",
+      "POSE C — THE QUIET CHAMPION (stoic grounded power):",
+      "  Body: Standing straight, chin slightly lifted, arms relaxed — like someone who just completed a massive mission.",
+      "  Face: PROUD but NOT smiling. Stoic, calm, intense. Eyes locked directly at camera. The face of someone who already won and is completely at peace with it.",
+      "  CTR psychology: Stoic confidence + direct gaze = extreme authority and trust.",
+      "  Prop: Glowing stopwatch or completed textbook.",
       "",
-      "TEXT RULES:",
-      "- HEADLINE LINE 2 MUST include the specific university/board/subject from the video topic — NOT generic",
-      "- BANNER must feel urgent, student-first, Hinglish — max 5 words only (it must fit on one line)",
-      "- NO invented facts or fake superlatives",
-      "- ALERT CARD: title only, max 4 words. Body must be max 6 words. Keep it short.",
-      "- TOTAL TEXT ELEMENTS: maximum 4 (badge + headline + alert card + banner). Do NOT add extra callouts, clocks, timers, or floating text badges beyond these 4.",
+      "EXPRESSION RULES — NON-NEGOTIABLE:",
+      "- REVOLUTIONARY MODE = SERIOUS. Zero smiling. Zero grinning. Zero excitement face.",
+      "- Student must think: 'This person is DEAD SERIOUS about helping me. This is real.'",
+      "- Eyes: intense and locked at camera — not looking away, not soft, not happy",
+      "- Jaw: set and composed — not open in excitement",
+      "- Prop: MUST GLOW — never look plain or academic",
+      "",
+      "TEXT / COGNITIVE LOAD RULES:",
+      "- MAXIMUM 4 text regions: (1) badge top-left, (2) main headline, (3) alert card TITLE ONLY, (4) bottom banner",
+      "- NO floating time callouts, NO timer icons, NO clock badges, NO extra text regions",
+      "- HEADLINE 2 MUST include specific university/board from topic — NEVER generic subject name only",
+      "- BANNER: max 5 words — must fit on one line at 180px thumbnail size",
+      "- ALERT CARD: title ONLY, max 4 words — absolutely NO body paragraph text inside",
+      "- No invented facts. No unverifiable superlatives.",
       "",
       "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
     ].join("\n");
@@ -164,33 +202,38 @@ export async function POST(request) {
       `SUBJECT: ${subjectInstruction}`,
       `CREATOR TYPE: ${creatorType}`,
       "",
-      "STEP 1: Extract SPECIFIC context from the video topic (university name, board, semester, subject, time). This context is the most important part.",
-      "STEP 2: Determine which TYPE (1/2/3) fits the topic.",
-      "STEP 3: Choose the pose. Prefer HAATH JODNA or COMMITMENT over celebratory poses.",
-      "STEP 4: Generate the plan. HEADLINE LINE 2 MUST include the specific context (e.g. RGPV SEM 2, not just PHYSICS).",
+      "THINK LIKE A CTR EXPERT FOR EXAM-PANICKING STUDENTS:",
+      "STEP 1: What is the SPECIFIC context? (university, board, semester, subject, time duration) — extract exactly.",
+      "STEP 2: Which SURVIVAL MESSAGE does this topic communicate? (I can still pass / Only video I need / Will save my exam / No coaching needed)",
+      "STEP 3: Which REVOLUTION TYPE (1/2/3) delivers that survival message best?",
+      "STEP 4: Which POSE creates maximum TRUST for exam-panicking students? (HAATH JODNA strongly preferred)",
+      "STEP 5: Plan the visual hierarchy — Face -> Headline (with specific context) -> Benefit -> Badge.",
       "",
-      "IMPORTANT: Do NOT invent claims like 'India ka pehla' or 'World record'. Only use claims directly supported by the topic text.",
+      "STRICT RULES: No invented superlatives. headline2 MUST include specific university/subject. Banner max 5 words. Alert title max 4 words. Alert = title ONLY.",
       "",
       "Generate the complete plan:",
       "{",
       '  "needsMoreInfo": false,',
       '  "revolutionType": "1 or 2 or 3",',
-      '  "poseArchetype": "HAATH JODNA / THE COMMITMENT / THE ACHIEVER",',
-      '  "conceptTitle": "5-word concept capturing the student champion energy",',
-      '  "ctrAnalysis": "2 sentences on why THESE SPECIFIC students will immediately click",',
-      '  "compositionStrategy": "1 sentence on layout",',
-      '  "subjectPose": "VERY DETAILED pose — exact body position, face expression, specific prop with glow description, eye direction, emotional energy — minimum 50 words",',
+      '  "survivalMessage": "which of the 4 survival messages this thumbnail communicates",',
+      '  "emotionalTriggers": "which 2-3 triggers (Relief/Urgency/FOMO/Trust/Achievement) this activates",',
+      '  "poseArchetype": "HAATH JODNA / THE COMMITMENT / THE QUIET CHAMPION",',
+      '  "conceptTitle": "5-word concept that makes a panicking student stop scrolling",',
+      '  "ctrAnalysis": "2 sentences — what specific psychological triggers make THIS student click in 0.5 seconds",',
+      '  "visualHierarchy": "Face -> [element2] -> [element3] -> [element4]",',
+      '  "compositionStrategy": "1 sentence on layout and placement",',
+      '  "subjectPose": "VERY DETAILED: exact body position, SERIOUS face expression (NOT smiling), precise prop with glow description, eye direction, jaw/brow state, emotional energy — minimum 60 words",',
       '  "overlayConfig": {',
       `    "accentColor": "${highlightColor || "#f5d800"}",`,
-      '    "topBadge": "TYPE-APPROPRIATE badge — can include specific subject/university e.g. RGPV FREE",',
+      '    "topBadge": "TYPE-APPROPRIATE badge — include university/subject if possible (e.g. RGPV FREE)",',
       '    "topBadgeColor": "#16a34a",',
-      '    "headline1": "Power word — FREE or POORA or COMPLETE or KHATAM — 1-3 words",',
-      '    "headline2": "MUST include the specific subject+context from topic (e.g. RGPV PHYSICS, SEM 2 MATHS) — 2-3 words",',
-      '    "bannerText": "Viral Hinglish statement — MAX 5 WORDS ONLY so it fits on one line",',
-      '    "bannerAccentWord": "the single most impactful word",',
+      '    "headline1": "Power word for benefit — FREE or POORA or KHATAM or COMPLETE — max 3 words",',
+      '    "headline2": "MUST include specific subject+university/board context (e.g. RGPV PHYSICS SEM 2) — 2-3 words",',
+      '    "bannerText": "Hinglish exam rescue statement — MAX 5 WORDS — readable at 180px",',
+      '    "bannerAccentWord": "the single most emotionally charged word in the banner",',
       '    "showAlertCard": true,',
-      '    "alertTitle": "Max 4 words — the good news headline. Include subject/context.",',
-      '    "alertBody": "Max 6 words — one ultra-short punchy line. NO long sentences.",',
+      '    "alertTitle": "Max 4 words — good news with subject/university context",',
+      '    "alertBody": "Max 6 words — one ultra-short punchy line",',
       '    "alertType": "success",',
       '    "showDateCallout": false,',
       '    "dateText": null,',
@@ -236,48 +279,46 @@ export async function POST(request) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   REVOLUTIONARY IMAGE PROMPT BUILDER — Student Champion Edition
-   Cinematic, warm-yet-intense, generous energy
+   IMAGE PROMPT BUILDER — Exam Panic CTR Edition
    ═══════════════════════════════════════════════════════════════════ */
 function buildRevolutionaryImagePrompt(plan, { videoTopic, brandColor, highlightColor, hasSubjectPhoto, poseMode, creatorType }) {
   const oc = plan.overlayConfig || {};
   const accent = highlightColor || oc.accentColor || "#f5d800";
-  const pose = plan.subjectPose || "standing in a respectful haath jodna namaste pose, both hands folded at chest level, sincere warm smile, eyes looking directly at camera with humble intensity, holding a glowing textbook near the folded hands, warm golden rim light from behind";
+  const pose = plan.subjectPose || "standing in a haath jodna namaste pose, both palms pressed together at chest level, head slightly bowed, serious intense expression, eyes looking directly at camera with burning quiet determination, jaw set, not smiling, glowing physics textbook beside the folded hands, warm golden rim light from behind";
   const isNamaste = (plan.poseArchetype || "").toLowerCase().includes("haath") || pose.toLowerCase().includes("namaste") || pose.toLowerCase().includes("haath");
 
   /* ── Subject block ─────────────────────────────────────────────── */
   const subjectBlock = hasSubjectPhoto
     ? `SUBJECT — MULTI-ANGLE FACE REFERENCE PROVIDED:
 The reference images contain Front, Left, and Right profile shots of the creator.
-CRITICAL: Reconstruct their EXACT face — every feature, skin tone, jawline, hair, eye shape — with absolute photorealistic precision. The face must be identical to the reference.
+CRITICAL: Reconstruct their EXACT face — every feature, skin tone, jawline, hair, eye shape — with absolute photorealistic precision.
 ${poseMode === "ai"
   ? `Now place them in this specific pose: "${pose}"
-  EXPRESSION RULES (MOST IMPORTANT):
+  EXPRESSION RULES (MOST IMPORTANT — READ CAREFULLY):
   - The creator must look SERIOUS, INTENSE, and DETERMINED — NOT smiling, NOT laughing, NOT excited
-  - Think: the expression of a warrior who has decided to give everything to students. Quiet power. Burning resolve.
-  - Eyes: intense, locked directly into the camera lens, slightly narrowed — like they are looking at every student personally
-  - Jaw: set and composed. Lips neutral or in a very slight pressed line — NOT a grin
-  - Eyebrows: slightly furrowed or neutral — communicating weight, not joy
-  ${ isNamaste ? `- HAATH JODNA SPECIFIC: Both palms pressed firmly together at chest height, fingers pointing upward — the classic Indian namaste. Head with a slight humble forward bow. The serious expression makes this feel like a SOLEMN VOW, not a greeting.` : "" }
-  - Lighting: Warm golden-hour glow from above-right, ${brandColor} subtle rim light from the left — cinematic but not dark`
-  : `Keep their exact reference pose. Apply warm cinematic lighting. Expression should look serious and intense.`
+  - Think: a doctor who walks in and says 'I've got you. You're going to be fine.' — calm authority, quiet power, certain
+  - Eyes: intense, locked directly into the camera lens — narrowed slightly, looking at every student personally
+  - Jaw: set and composed. Lips neutral or very slight pressed line — NOT a grin, NOT open
+  - Eyebrows: slightly furrowed or neutral — communicating weight and commitment, not joy
+  ${ isNamaste ? `- HAATH JODNA / NAMASTE SPECIFIC: Both palms pressed firmly together at chest height, fingers pointing upward — the classic Indian namaste. Head with a slight humble forward bow. The serious expression + namaste = a SOLEMN VOW to students. It must look sacred and sincere, not like a casual greeting.` : "" }
+  - Lighting: Warm golden-hour glow from above-right creating a halo effect, ${brandColor} subtle cinematic rim light from the left`
+  : `Keep their exact reference pose. Apply dramatic cinematic lighting — golden from right, ${brandColor} rim from left. Expression: serious and intense.`
 }`
     : `SUBJECT — Create a confident, intense Indian educator/presenter:
 Pose: "${pose}"
-${ isNamaste ? `HAATH JODNA RENDERING: Both palms pressed together at chest level, fingers upward — classic Indian namaste. Head slightly bowed. This must look like a SOLEMN VOW — not a casual greeting.` : "" }
-Look: Well-groomed, professional, 22-32 years old, smart dark shirt or jacket
-EXPRESSION (CRITICAL): SERIOUS and INTENSE — NOT smiling. Eyes locked into camera with burning determination. Jaw composed and set. This person has made an unbreakable decision to help students and it shows on their face.
-Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brandColor} subtle rim from left`;
+${ isNamaste ? `HAATH JODNA RENDERING: Both palms pressed together at chest level, fingers pointing upward — classic Indian namaste. Head slightly bowed in humility. This must feel like a SOLEMN VOW to students — sacred, sincere, powerful. NOT a casual greeting.` : "" }
+Look: Well-groomed, professional, 22-32 years old, wearing a smart dark shirt or jacket
+EXPRESSION (CRITICAL — MOST IMPORTANT): SERIOUS and INTENSE — NOT smiling, NOT grinning, NOT excited. Eyes locked into camera lens with burning, quiet determination. Jaw set and composed. Brow slightly furrowed. This is the face of someone who has made an unbreakable decision to help students.
+Lighting: Warm golden rim light from above-right creating a subtle hero halo, ${brandColor} cinematic rim from left`;
 
   /* ── Text elements ─────────────────────────────────────────────── */
   const textElements = [];
 
   if (oc.topBadge) {
     textElements.push(
-      `TOP-LEFT CORNER — Bold, positive pill badge:
-  ALL CAPS text "${oc.topBadge}" in pure white on a rich GREEN (#16a34a) background
-  Badge has a warm glow halo — signals good news, not danger
-  Sharp rounded corners, like a "VERIFIED" or "GIFT" label`
+      `TOP-LEFT CORNER — Bold pill badge:
+  ALL CAPS "${oc.topBadge}" in pure white on solid GREEN (#16a34a)
+  Subtle warm glow halo around badge. Sharp rounded corners. Signals good news, not danger.`
     );
   }
 
@@ -285,22 +326,20 @@ Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brand
     const h1 = oc.headline1 ? `"${oc.headline1.toUpperCase()}"` : null;
     const h2 = oc.headline2 ? `"${oc.headline2.toUpperCase()}"` : null;
     textElements.push(
-      `MAIN HEADLINE — Left-center, MASSIVE, stacked:
-  ${h1 ? `Line 1: ${h1} — Impact/ultra-bold condensed font, pure BRIGHT WHITE, takes up 35% of frame height, 3D emboss effect, golden drop-shadow (not red — warm and triumphant)` : ""}
-  ${h2 ? `Line 2: ${h2} — same massive size, ITALIC, glowing ${accent} yellow/orange — feels like it is lit by fire or sunlight from within` : ""}
-  Both lines flush left — MASSIVE scale is essential`
+      `MAIN HEADLINE — Left-center, MASSIVE stacked text:
+  ${h1 ? `Line 1: ${h1} — Impact/ultra-bold condensed, pure BRIGHT WHITE, takes up 30-35% of frame height, 3D emboss with golden drop-shadow` : ""}
+  ${h2 ? `Line 2: ${h2} — same massive size, ITALIC, glowing ${accent} — like lit from golden sunlight within` : ""}
+  Both lines flush left. Scale is the weapon — must be readable at 180px.`
     );
   }
 
   if (oc.showAlertCard && oc.alertTitle) {
-    // Only show title — no body text to avoid clutter
     textElements.push(
-      `RIGHT SIDE — Clean achievement card:
-  Dark semi-transparent background with a thick GREEN (#16a34a) left-border stripe
-  Small green label at top: "FREE" or "OFFICIAL"
-  Main title ONLY: "${oc.alertTitle.toUpperCase()}" in white, bold, large
-  IMPORTANT: NO body paragraph text. Title only. Card must look clean, not cluttered.
-  This card signals GOOD NEWS — like a gift label, not a warning`
+      `RIGHT SIDE — Clean, minimal good-news card:
+  Dark semi-transparent background with thick GREEN (#16a34a) left-border stripe
+  Small green "FREE" or "OFFICIAL" label at top
+  TITLE ONLY: "${oc.alertTitle.toUpperCase()}" in white, bold, large
+  IMPORTANT: NO body paragraph text inside this card. Title only. Clean. Uncluttered.`
     );
   }
 
@@ -308,83 +347,75 @@ Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brand
     const upper = oc.bannerText.toUpperCase();
     const accentWord = oc.bannerAccentWord ? oc.bannerAccentWord.toUpperCase() : null;
     const bannerDesc = accentWord
-      ? `"${upper}" — the word "${accentWord}" blazing in ${accent} yellow, the rest in pure white`
-      : `"${upper}" in white`;
+      ? `"${upper}" — word "${accentWord}" blazing in ${accent} yellow, rest in pure white`
+      : `"${upper}" in pure white`;
     textElements.push(
       `FULL-WIDTH BOTTOM BANNER:
-  Very dark (near black) background with a 2px ${accent} line at the top
-  Impact bold condensed font: ${bannerDesc}
-  This is the final emotional hook — the banner must feel like the most important thing a student could read today`
+  Near-black background with 2px ${accent} top line
+  Impact bold condensed: ${bannerDesc}
+  Must be readable at 180px. This is the final emotional hook.`
     );
   }
 
   const textSection = textElements.length > 0
     ? textElements.map((el, i) => `${i + 1}. ${el}`).join("\n\n")
-    : `Massive white Impact text left-aligned, ${accent} glow on secondary text, green badge top-left`;
+    : `Massive white Impact headline left-aligned, ${accent} glow on secondary text, green badge top-left`;
 
   /* ── Environment ───────────────────────────────────────────────── */
   const environment = creatorType === "gaming"
-    ? `Epic gaming arena with golden particle explosions, confetti raining down — a victory celebration scene`
+    ? `Epic arena with golden particle explosions — victory celebration`
     : creatorType === "vlogs"
-    ? `Cinematic location with warm golden-hour lighting, depth of field — feels like a movie poster moment`
-    : `Dark-to-golden gradient environment: bottom is deep dark (near black with ${brandColor} tint), but ERUPTING upward into warm golden light rays from behind the subject — like a sunrise breaking through darkness. Flying pages, equations, and physics diagrams float in the golden light around the subject. It should look like KNOWLEDGE breaking free and being given away. The background communicates: 'Something unprecedented is happening here.'`;
+    ? `Cinematic location with warm golden-hour lighting — movie poster moment`
+    : `Dark-to-golden gradient: deep dark at the bottom edges (with a subtle ${brandColor} atmospheric tint), erupting upward into warm golden light rays from directly behind the subject — like a sunrise breaking through darkness. Physics equations, pages, and diagrams float in the golden light around the subject. The background communicates: 'Knowledge is being freed and given away.'`;
 
   return (
-    `Generate a COMPLETE, ultra-cinematic, HIGH-CTR YouTube thumbnail that communicates one thing above all else: ` +
-    `this creator just did something GENUINELY UNPRECEDENTED and GENUINELY GOOD for students. ` +
-    `Every element below MUST appear in the final image. This is the finished, upload-ready thumbnail.\n\n` +
+    `Generate a COMPLETE, ultra-cinematic, HIGH-CTR YouTube thumbnail. ` +
+    `This thumbnail must communicate one thing above all else: an exam-panicking student sees this and immediately thinks 'This is exactly what I need. Right now.'\n\n` +
 
-    `CORE EMOTIONAL MESSAGE: A student seeing this thumbnail must feel: ` +
-    `"This creator is on MY side. They just gave me something PRICELESS for FREE that I desperately needed. I have to watch this RIGHT NOW."\n\n` +
+    `CORE EMOTION TO TRIGGER: RELIEF + URGENCY. The student must feel: 'I can still save my exam. This creator is doing this for ME.'\n\n` +
 
-    `REFERENCE AESTHETIC: The best Physics Wallah thumbnails (genuine, warm, student-first) but elevated to ` +
-    `a cinematic level — like a Bollywood climax scene where the hero arrives to save students.\n\n` +
+    `REFERENCE: Physics Wallah's most trusted thumbnails crossed with MrBeast's stopping power. ` +
+    `Cinematic, serious, student-first — not flashy or hype-driven.\n\n` +
 
-    `FORMAT: 16:9 landscape (1280x720)\n\n` +
+    `FORMAT: 16:9 landscape (1280x720). MOBILE PRIORITY: must be readable at 180px wide.\n\n` +
 
     `TOPIC: ${videoTopic}\n\n` +
 
-    `ATMOSPHERE (defines everything — READ CAREFULLY):\n` +
+    `ATMOSPHERE:\n` +
     `- Background: ${environment}\n` +
-    `- Overall mood: TRIUMPHANT and WARM — NOT dark, NOT cold, NOT horror. This is a VICTORY scene.\n` +
-    `- Color temperature: Deep darks at edges transitioning to warm golden light at center-top\n` +
-    `- ${brandColor} used as a subtle atmospheric rim light on the subject from the left\n` +
-    `- ${accent} used as the warm accent glow — sunlight, achievement, triumph\n` +
-    `- Particles: Warm golden light dust, floating pages, sparkles — NEVER embers or fire sparks (this isn't danger)\n` +
-    `- Depth of field: Background slightly bokeh, subject razor sharp\n` +
-    `- Vignette: Subtle dark vignette at the very edges only\n\n` +
+    `- Mood: Serious, cinematic, authoritative — NOT celebratory or party-like\n` +
+    `- Color: Deep dark edges -> warm golden center. ${brandColor} as rim light. ${accent} as accent glow.\n` +
+    `- Particles: Warm golden light dust, floating pages, equation fragments — NEVER fire sparks or explosions\n` +
+    `- Depth: Background slightly bokeh, subject razor sharp\n` +
+    `- Vignette: Subtle dark vignette at very edges only\n\n` +
 
     `SUBJECT:\n${subjectBlock}\n\n` +
 
-    `TEXT & OVERLAY ELEMENTS:\n` +
+    `TEXT & OVERLAY ELEMENTS (MAXIMUM 4 REGIONS):\n` +
     textSection + `\n\n` +
 
     `TYPOGRAPHY:\n` +
     `- Impact / ultra-bold condensed sans-serif for headlines\n` +
-    `- 3D emboss with GOLDEN drop shadow (not red — this is triumph, not danger)\n` +
-    `- All text sharp, perfectly spelled, readable at thumbnail size\n\n` +
+    `- 3D emboss with golden drop shadow — NOT red (this is trust and triumph, not danger)\n` +
+    `- All text perfectly spelled, sharp, readable at 180px\n\n` +
 
     `ANATOMY (CRITICAL):\n` +
-    `- Subject has EXACTLY two natural arms and hands\n` +
-    `- Hands anatomically perfect — no extra fingers\n` +
+    `- Subject has EXACTLY two natural arms and two hands\n` +
+    `- Hands anatomically perfect — correct number of fingers\n` +
     `- ZERO extra limbs or floating body parts\n\n` +
 
     `CRITICALLY AVOID:\n` +
-    `- Dark horror-movie lighting\n` +
-    `- Cold blue or grey color palettes\n` +
-    `- Conspiracy or expose vibes\n` +
-    `- Superhero CGI poses\n` +
-    `- Generic calm stock-photo educator poses\n` +
-    `- Fire, explosions, destruction\n` +
-    `- TEXT CLUTTER: Do NOT add floating time badges, timer icons, clock callouts, or any extra text bubbles beyond the 4 listed above\n` +
-    `- ALERT CARD must show TITLE ONLY inside — absolutely no body paragraph text inside the card\n\n` +
+    `- ANY smiling or happy expression — this mode requires serious, intense, determined\n` +
+    `- Jumping, leaping, mid-air action hero poses\n` +
+    `- Dark horror-movie lighting or cold blue/grey palettes\n` +
+    `- Fire, explosions, or destruction imagery\n` +
+    `- TEXT CLUTTER: No floating timer badges, clock callouts, or extra text beyond the 4 regions listed\n` +
+    `- Alert card body paragraph text — TITLE ONLY inside the card\n\n` +
 
-    `READABILITY RULE (CRITICAL): A student viewing this thumbnail at 200px wide must instantly read the headline. ` +
-    `Maximum 4 distinct text regions visible. Less text = more impact = higher CTR.\n\n` +
+    `READABILITY LAW: Maximum 4 distinct text regions. At 180px, a student must instantly read: subject name and main benefit. Less text = more impact = higher CTR.\n\n` +
 
     `QUALITY: Photorealistic, 4K, cinematic. ` +
-    `The thumbnail must look like it was shot by a Bollywood film crew and designed by the best creative agency in India. ` +
-    `A student scrolling at 11pm before their exam must physically stop and feel hope when they see it.`
+    `This thumbnail must make a student scrolling at 11pm the night before their exam physically stop and feel: 'This person is going to save me.'`
   );
 }
 
@@ -398,26 +429,25 @@ function buildRevolutionaryFallbackPlan({ videoTopic, brandColor, highlightColor
   const plan = {
     needsMoreInfo: false,
     revolutionType: type,
-    poseArchetype: type === "1" ? "THE GIFT GIVER" : "THE ACHIEVER",
-    conceptTitle: type === "1" ? "Unprecedented Free Gift For Students" : "Record-Breaking Student Miracle",
-    ctrAnalysis:
-      "Students immediately recognize this creator as a champion who gives them what coaching institutes charge lakhs for. The warm cinematic energy and triumphant achievement messaging creates instant emotional connection and FOMO.",
-    compositionStrategy:
-      "Subject in triumphant pose LEFT with glowing prop, massive FREE/RECORD headline CENTER-LEFT, achievement card RIGHT, viral Hinglish banner BOTTOM.",
-    subjectPose: type === "1"
-      ? "standing tall with both arms spread slightly open and forward in a generous offering gesture, massive warm beaming smile, eyes shining with genuine joy, holding a glowing golden badge that says FREE in one hand, warm golden rim light from behind and soft brand-color light from left, looking directly at camera with the expression of someone who just gave students the best gift of their life"
-      : "standing confident and proud, one arm raised in a triumphant fist-pump at shoulder height (not above head — grounded and powerful), other hand holding a glowing stopwatch showing the achievement time, massive proud smile, direct eye contact, chin slightly lifted, warm golden cinematic lighting from behind creating a halo effect",
+    survivalMessage: type === "1" ? "I don't need coaching anymore" : type === "2" ? "This is the only video I need" : "I can still pass",
+    emotionalTriggers: "Relief, FOMO, Trust",
+    poseArchetype: "HAATH JODNA",
+    conceptTitle: type === "1" ? "Free Exam Rescue For Students" : "Complete Exam Coverage Free",
+    ctrAnalysis: "An RGPV student 3 days before exam sees their specific university name + FREE and immediately feels relief. The serious namaste pose communicates this creator is genuinely doing this for them, not for money.",
+    visualHierarchy: "Face (namaste, serious) -> RGPV PHYSICS headline -> FREE benefit -> badge",
+    compositionStrategy: "Subject with namaste pose LEFT, massive specific headline CENTER-LEFT, clean alert card RIGHT, short banner BOTTOM.",
+    subjectPose: "both palms pressed firmly together at chest height in a classic Indian namaste gesture, head with a slight humble forward bow, eyes looking directly and intensely at camera with quiet burning determination — NOT smiling, jaw set and composed, brow slightly furrowed in sincere commitment, expression communicates an unbreakable promise to help students, warm golden rim light from behind creating a halo effect, a glowing physics textbook positioned near the folded hands radiating warm light",
     overlayConfig: {
       accentColor: highlightColor || "#f5d800",
-      topBadge: type === "1" ? "FREE FOR ALL" : "RECORD BROKEN",
+      topBadge: type === "1" ? "COACHING SE AZAAD" : "ONE SHOT",
       topBadgeColor: "#16a34a",
-      headline1: type === "1" ? "BILKUL FREE" : "RECORD BROKEN",
-      headline2: "PHYSICS",
-      bannerText: type === "1" ? "Jo coaching mein ₹50,000 tha — aaj FREE!" : "6 ghante mein poori physics khatam!",
-      bannerAccentWord: type === "1" ? "FREE" : "khatam",
+      headline1: type === "1" ? "BILKUL FREE" : "POORA KHATAM",
+      headline2: "RGPV PHYSICS",
+      bannerText: type === "1" ? "Exam bacha lo FREE mein!" : "Poori physics ek video!",
+      bannerAccentWord: type === "1" ? "FREE" : "physics",
       showAlertCard: true,
-      alertTitle: type === "1" ? "100% FREE — NO CATCH" : "INDIA KA PEHLA RECORD",
-      alertBody: videoTopic.slice(0, 80),
+      alertTitle: type === "1" ? "COACHING NAHI CHAHIYE" : "FULL SYLLABUS FREE",
+      alertBody: videoTopic.slice(0, 60),
       alertType: "success",
       showDateCallout: false,
       dateText: null,
