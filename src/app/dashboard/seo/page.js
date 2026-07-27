@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import {
   Search, Sparkles, Check, ChevronDown, ChevronUp,
-  Clock, AlignLeft, List, Zap, Copy,
+  Clock, AlignLeft, List, Zap, Copy, PlusCircle,
   TrendingUp, Target, Lightbulb, Globe, Users, FileText, Award
 } from "lucide-react";
 import SeoResultPanel from "../components/SeoResultPanel";
@@ -96,6 +96,8 @@ function ChaptersFeature() {
   const [pastedTranscript, setPastedTranscript] = useState("");
   const [chaptersResult, setChaptersResult] = useState(null);
   const [error, setError] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,6 +126,19 @@ function ChaptersFeature() {
     setStep("INPUT");
     setVideoUrl("");
     setPastedTranscript("");
+  };
+
+  const copyOne = (text, i) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(i);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const copyAll = () => {
+    const text = (chaptersResult || []).map(c => `${c.time} ${c.title}`).join("\n");
+    navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
   };
 
   return (
@@ -201,7 +216,7 @@ function ChaptersFeature() {
               </div>
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-off-white">Gemini AI is analyzing…</h2>
+              <h2 className="text-2xl font-semibold text-off-white">AI is analyzing…</h2>
               <p className="text-xs text-muted uppercase tracking-[0.2em] font-light">Extracting accurate video chapters</p>
             </div>
           </div>
@@ -211,9 +226,8 @@ function ChaptersFeature() {
       {step === "RESULT" && chaptersResult && (
         <div className="max-w-3xl mx-auto space-y-6 animate-fadeIn">
           <div className="flex gap-3 flex-wrap">
-            <button onClick={handleNew}
-              className="premium-btn flex items-center gap-2 px-4 py-2.5 text-xs">
-              <PlusCircle className="w-3.5 h-3.5" />
+            <button onClick={handleNew} className="premium-btn flex items-center gap-2 px-4 py-2.5 text-xs">
+              <List className="w-3.5 h-3.5" />
               New Video
             </button>
           </div>
@@ -223,17 +237,26 @@ function ChaptersFeature() {
                 <h3 className="text-sm font-semibold text-off-white">Video Chapters</h3>
                 <p className="text-[10px] text-muted mt-0.5">Paste into description — YouTube auto-detects timestamps</p>
               </div>
-              <CopyButton
-                text={(chaptersResult || []).map(c => `${c.time} ${c.title}`).join("\n")}
-                label="Copy All"
-              />
+              <button
+                onClick={copyAll}
+                className="p-2 px-3 hover:bg-white/5 rounded-md text-muted hover:text-white transition-colors flex items-center gap-1.5 shrink-0"
+              >
+                {copiedAll ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span className="text-[10px] font-bold uppercase tracking-wider">{copiedAll ? "Copied!" : "Copy All"}</span>
+              </button>
             </div>
             <div className="space-y-2">
               {(chaptersResult || []).map((ch, i) => (
                 <div key={i} className="flex items-center gap-4 p-3.5 bg-white/3 border border-white/8 rounded-xl group hover:border-gold/20 transition-all">
                   <span className="font-mono text-sm text-gold font-bold shrink-0 w-12">{ch.time}</span>
                   <span className="text-sm text-off-white flex-1">{ch.title}</span>
-                  <CopyButton text={`${ch.time} ${ch.title}`} />
+                  <button
+                    onClick={() => copyOne(`${ch.time} ${ch.title}`, i)}
+                    className="p-2 hover:bg-white/5 rounded-md text-muted hover:text-white transition-colors shrink-0"
+                    title="Copy"
+                  >
+                    {copiedIndex === i ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
               ))}
             </div>
