@@ -332,7 +332,7 @@ export default function SEOStudioPage() {
       </div>
 
       {mode === "CHAPTERS" ? (
-        <ChaptersMakerPanel />
+        <ChaptersFeature />
       ) : (
         <>
           {/* error */}
