@@ -148,8 +148,10 @@ export async function POST(request) {
       "",
       "TEXT RULES:",
       "- HEADLINE LINE 2 MUST include the specific university/board/subject from the video topic — NOT generic",
-      "- BANNER must feel urgent, student-first, Hinglish — like the most important WhatsApp forward",
+      "- BANNER must feel urgent, student-first, Hinglish — max 5 words only (it must fit on one line)",
       "- NO invented facts or fake superlatives",
+      "- ALERT CARD: title only, max 4 words. Body must be max 6 words. Keep it short.",
+      "- TOTAL TEXT ELEMENTS: maximum 4 (badge + headline + alert card + banner). Do NOT add extra callouts, clocks, timers, or floating text badges beyond these 4.",
       "",
       "Respond ONLY with valid raw JSON — no markdown, no code blocks.",
     ].join("\n");
@@ -183,11 +185,11 @@ export async function POST(request) {
       '    "topBadgeColor": "#16a34a",',
       '    "headline1": "Power word — FREE or POORA or COMPLETE or KHATAM — 1-3 words",',
       '    "headline2": "MUST include the specific subject+context from topic (e.g. RGPV PHYSICS, SEM 2 MATHS) — 2-3 words",',
-      '    "bannerText": "Viral Hinglish statement using the specific subject/context — max 7 words",',
+      '    "bannerText": "Viral Hinglish statement — MAX 5 WORDS ONLY so it fits on one line",',
       '    "bannerAccentWord": "the single most impactful word",',
       '    "showAlertCard": true,',
-      '    "alertTitle": "What is the creator specifically giving students? Include subject/context.",',
-      '    "alertBody": "1 sentence — specific, believable, no fake claims",',
+      '    "alertTitle": "Max 4 words — the good news headline. Include subject/context.",',
+      '    "alertBody": "Max 6 words — one ultra-short punchy line. NO long sentences.",',
       '    "alertType": "success",',
       '    "showDateCallout": false,',
       '    "dateText": null,',
@@ -288,13 +290,14 @@ Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brand
   }
 
   if (oc.showAlertCard && oc.alertTitle) {
+    // Only show title — no body text to avoid clutter
     textElements.push(
-      `RIGHT SIDE — Positive achievement card (like a prize reveal or good news card):
+      `RIGHT SIDE — Clean achievement card:
   Dark semi-transparent background with a thick GREEN (#16a34a) left-border stripe
-  Green "✅ OFFICIAL" or "🎁 FREE" label at top
-  Main title: "${oc.alertTitle.toUpperCase()}" in white, bold, large
-  Body: "${(oc.alertBody || "").slice(0, 80)}"
-  IMPORTANT: This card must feel like GOOD NEWS — like a gift announcement, not a warning or danger signal`
+  Small green label at top: "FREE" or "OFFICIAL"
+  Main title ONLY: "${oc.alertTitle.toUpperCase()}" in white, bold, large
+  IMPORTANT: NO body paragraph text. Title only. Card must look clean, not cluttered.
+  This card signals GOOD NEWS — like a gift label, not a warning`
     );
   }
 
@@ -366,10 +369,15 @@ Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brand
     `CRITICALLY AVOID:\n` +
     `- Dark horror-movie lighting\n` +
     `- Cold blue or grey color palettes\n` +
-    `- Conspiracy/exposé vibes — no evil-looking expressions\n` +
-    `- Superhero CGI poses — keep it real and grounded\n` +
-    `- Generic, calm, stock-photo educator poses\n` +
-    `- Fire, explosions, destruction — this is a GIFT, not a weapon\n\n` +
+    `- Conspiracy or expose vibes\n` +
+    `- Superhero CGI poses\n` +
+    `- Generic calm stock-photo educator poses\n` +
+    `- Fire, explosions, destruction\n` +
+    `- TEXT CLUTTER: Do NOT add floating time badges, timer icons, clock callouts, or any extra text bubbles beyond the 4 listed above\n` +
+    `- ALERT CARD must show TITLE ONLY inside — absolutely no body paragraph text inside the card\n\n` +
+
+    `READABILITY RULE (CRITICAL): A student viewing this thumbnail at 200px wide must instantly read the headline. ` +
+    `Maximum 4 distinct text regions visible. Less text = more impact = higher CTR.\n\n` +
 
     `QUALITY: Photorealistic, 4K, cinematic. ` +
     `The thumbnail must look like it was shot by a Bollywood film crew and designed by the best creative agency in India. ` +
