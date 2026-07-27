@@ -123,27 +123,28 @@ export async function POST(request) {
       "The student should feel the creator is COMMITTED and SERIOUS about helping them — not just excited.",
       "",
       "POSE A — HAATH JODNA / NAMASTE (PRIMARY RECOMMENDATION — most authentic for Indian education):",
-      "  Body: Both hands folded together at chest level in a respectful namaste gesture, head slightly bowed forward in humility",
-      "  Face: Sincere, warm, serious smile — not a big grin, a genuine grateful look — eyes soft but intense",
-      "  Energy: 'I am doing this for you with all my heart. Please take this gift.' — humble commitment",
-      "  Prop: A glowing textbook or formula sheet held between the folded hands, or floating beside them",
+      "  Body: Both hands folded together at chest level in a respectful namaste gesture, head slightly bowed forward",
+      "  Face: SERIOUS and INTENSE — NOT smiling. Jaw set, eyes looking up at camera with quiet burning determination. The expression of someone who has made an unbreakable promise.",
+      "  Energy: 'I have given up everything to make this for you. I am dead serious.'",
+      "  Prop: A glowing textbook or formula sheet near the folded hands",
       "",
       "POSE B — THE COMMITMENT (hand on heart, direct gaze):",
       "  Body: One hand flat on chest over heart, other hand relaxed at side or holding prop",
-      "  Face: Deeply serious, sincere, direct eye contact — a solemn promise",
-      "  Energy: 'I swear on my students — this is real. I am here for you.'",
-      "  Prop: Holding a glowing book or syllabus in the free hand, or a glowing FREE badge",
+      "  Face: DEEPLY SERIOUS — NOT smiling. Intense direct eye contact, slight furrowed brow, jaw slightly set. A solemn warrior-level commitment.",
+      "  Energy: 'I swear on every student watching this. This is real. Take it.'",
+      "  Prop: Holding a glowing book or syllabus in the free hand",
       "",
-      "POSE C — THE ACHIEVER (grounded, not jumping):",
-      "  Body: Standing straight, chin slightly lifted, arms relaxed but confident — like someone who just finished something massive",
-      "  Face: Proud, calm, direct eye contact — the quiet confidence of someone who already won",
-      "  Energy: 'I said I would do it. I did it. Here it is.'",
-      "  Prop: Holding a glowing stopwatch showing the time, or a shining completed textbook",
+      "POSE C — THE ACHIEVER (quiet power, grounded confidence):",
+      "  Body: Standing straight, chin slightly lifted, arms relaxed but confident",
+      "  Face: PROUD but NOT smiling — a quiet, powerful, almost stoic confidence. Eyes intense and locked on camera. The face of someone who just won something enormous and is completely calm about it.",
+      "  Energy: 'I said I would do it. I did it. Now it’s yours.'",
+      "  Prop: Holding a glowing stopwatch or a shining completed textbook",
       "",
       "CRITICAL POSE RULES:",
-      "- AVOID big jumping/fist-pumping action hero poses — they look fake for education content",
-      "- AVOID excited/hyped-up celebrity expressions — this creator is SINCERE, not a showman",
-      "- The expression must make a student think: 'This creator genuinely cares about me'",
+      "- AVOID big jumping/fist-pumping action hero poses",
+      "- AVOID smiling or happy-go-lucky expressions — revolutionary mode requires SERIOUS, INTENSE, DETERMINED energy",
+      "- NO warm grin, NO toothy smile, NO celebratory excited face",
+      "- The expression must make a student think: 'This person is dead serious. I need to watch this.'",
       "- Prop must GLOW or have light-burst effect — never look plain or clean-academic",
       "",
       "TEXT RULES:",
@@ -251,20 +252,22 @@ The reference images contain Front, Left, and Right profile shots of the creator
 CRITICAL: Reconstruct their EXACT face — every feature, skin tone, jawline, hair, eye shape — with absolute photorealistic precision. The face must be identical to the reference.
 ${poseMode === "ai"
   ? `Now place them in this specific pose: "${pose}"
-  POSE RENDERING RULES:
-  - The body must look NATURAL and GROUNDED — this is a real person, a genuine educator
-  - AVOID: jumping, mid-air poses, exaggerated action-hero fist-pumps above the head
-  ${ isNamaste ? `- HAATH JODNA SPECIFIC: Both palms pressed firmly together at chest height, fingers pointing upward — the classic Indian namaste. Head with a slight humble forward bow. Render this gesture with full dignity and care.` : "" }
-  - Their expression is the HEART of this thumbnail — sincere, committed, genuinely caring for students
-  - Lighting: Warm golden-hour glow from above-right creating a halo effect, ${brandColor} subtle rim light from the left`
-  : `Keep their exact reference pose. Apply warm cinematic lighting — golden from right, ${brandColor} rim from left. Floating light particles.`
+  EXPRESSION RULES (MOST IMPORTANT):
+  - The creator must look SERIOUS, INTENSE, and DETERMINED — NOT smiling, NOT laughing, NOT excited
+  - Think: the expression of a warrior who has decided to give everything to students. Quiet power. Burning resolve.
+  - Eyes: intense, locked directly into the camera lens, slightly narrowed — like they are looking at every student personally
+  - Jaw: set and composed. Lips neutral or in a very slight pressed line — NOT a grin
+  - Eyebrows: slightly furrowed or neutral — communicating weight, not joy
+  ${ isNamaste ? `- HAATH JODNA SPECIFIC: Both palms pressed firmly together at chest height, fingers pointing upward — the classic Indian namaste. Head with a slight humble forward bow. The serious expression makes this feel like a SOLEMN VOW, not a greeting.` : "" }
+  - Lighting: Warm golden-hour glow from above-right, ${brandColor} subtle rim light from the left — cinematic but not dark`
+  : `Keep their exact reference pose. Apply warm cinematic lighting. Expression should look serious and intense.`
 }`
-    : `SUBJECT — Create a passionate, handsome Indian educator/presenter:
+    : `SUBJECT — Create a confident, intense Indian educator/presenter:
 Pose: "${pose}"
-${ isNamaste ? `HAATH JODNA RENDERING: Both palms pressed together at chest level, fingers upward — classic Indian namaste. Head slightly bowed in humility. Expression: warm, sincere, deeply committed. NOT performative.` : "" }
+${ isNamaste ? `HAATH JODNA RENDERING: Both palms pressed together at chest level, fingers upward — classic Indian namaste. Head slightly bowed. This must look like a SOLEMN VOW — not a casual greeting.` : "" }
 Look: Well-groomed, professional, 22-32 years old, smart dark shirt or jacket
-Expression: Sincere, committed, warm — the look of someone genuinely here for students, not for fame
-Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brandColor} subtle rim from left — cinematic and warm`;
+EXPRESSION (CRITICAL): SERIOUS and INTENSE — NOT smiling. Eyes locked into camera with burning determination. Jaw composed and set. This person has made an unbreakable decision to help students and it shows on their face.
+Lighting: Warm golden rim light from behind creating a subtle hero halo, ${brandColor} subtle rim from left`;
 
   /* ── Text elements ─────────────────────────────────────────────── */
   const textElements = [];
